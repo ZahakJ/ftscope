@@ -7,12 +7,12 @@ import { fmtCount, fmtDur } from '../format';
 import { onSchemeChange, readPalette, type Palette } from '../timeline/colors';
 import { boxAt, flatten, scales, toPixels, typicalPeer, type MiniTree, type PxBox } from './compare';
 
-const H = 112;
+const H = 176;
 const LABEL = 14; // label strip above each chart
-const CHART = 42;
+const CHART = 72;
 const TOP_A = LABEL;
 const TOP_B = LABEL + CHART + LABEL;
-const MAX_ROWS = 10;
+const MAX_ROWS = 12;
 
 interface Geo { boxes: [PxBox[], PxBox[]]; rh: number; k: [number, number] }
 
@@ -110,10 +110,17 @@ export function Compare({ t, id, peers }: { t: Trace; id: number; peers: Int32Ar
             const a1 = Math.min(xb, Math.round(b.px1) - 1);
             if (a1 <= a0) continue;
             const y = y0 + b.row * rh;
-            ctx.fillStyle = pal.surface1;
+            // Hollow: the box's own colour as an outline, emptied inside (hatched when rows are tall enough).
+            ctx.fillStyle = pal.catFill[t.funcs.cat[t.spans.func[b.id]]] ?? pal.catFill[0];
             ctx.fillRect(a0, y, a1 - a0, rh - 1);
-            ctx.fillStyle = hatch(ctx, pal.lineStrong);
-            ctx.fillRect(a0, y, a1 - a0, rh - 1);
+            if (rh - 1 > 2) {
+              ctx.fillStyle = pal.surface1;
+              ctx.fillRect(a0, y + 1, a1 - a0, rh - 3);
+              if (rh >= 7) {
+                ctx.fillStyle = hatch(ctx, pal.lineStrong);
+                ctx.fillRect(a0, y + 1, a1 - a0, rh - 3);
+              }
+            }
           }
         }
         const h = hov.current;

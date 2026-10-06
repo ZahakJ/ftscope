@@ -315,12 +315,14 @@ function RawLines({ raw }: { t: Trace; raw: RawWindow | null }) {
   const cut = useMemo(() => sharedCut(all.map((r) => r.text)), [raw]);
   if (!raw) return null;
   const c = full ? 0 : cut;
+  // Deep calls would start far right: drop the indentation every graph line in the window shares.
+  const indent = useMemo(() => all.reduce((m, r) => { const g = graphCells(r.text); return g && g.body.trim() ? Math.min(m, g.body.length - g.body.trimStart().length) : m; }, 1e9), [raw]);
   const row = (r: RawWindow['head'][number]) => {
     const cells = full ? null : graphCells(r.text);
     return (
       <div class={'insp-raw-row' + (r.mark ? ' is-mark' : '')}>
         <span class="insp-raw-n">{r.n ?? ''}</span>
-        {cells ? <><span class="insp-raw-d">{cells.dur}</span><RawText text={cells.body} /></> : <RawText text={c && !isNoise(r.text) ? r.text.slice(c) : r.text} />}
+        {cells ? <><span class="insp-raw-d">{cells.dur}</span><RawText text={cells.body.slice(Math.min(indent, cells.body.length - cells.body.trimStart().length))} /></> : <RawText text={c && !isNoise(r.text) ? r.text.slice(c) : r.text} />}
       </div>
     );
   };
@@ -459,6 +461,11 @@ function EventView({ t, id }: { t: Trace; id: number }) {
     return () => { live = false; };
   }, [id, f]);
   const task = t.tasks[e.task[id]];
+  const fields = line ? eventFields(line, name) : [];
+  const cells = line ? graphCells(line) : null;
+  // No key=value pairs (`sys_exit: NR 0 = 832`): the event's own text, without the comment marks.
+  const at = line ? line.indexOf(name + ':') : -1;
+  const payload = line && at >= 0 ? line.slice(at + name.length + 1).replace(/\s*\*\/\s*$/, '').trim() : '';
   return (
     <div class="insp-body">
       <h2 class="insp-name">{name}</h2>
@@ -472,8 +479,12 @@ function EventView({ t, id }: { t: Trace; id: number }) {
       </dl>
       {line && (
         <>
-          <section><Label>Fields</Label><dl class="insp-facts">{eventFields(line, name).map((x) => <><dt class="insp-arg">{x.key}</dt><dd>{x.value}</dd></>)}</dl></section>
-          <section><Label>Raw line</Label><div class="insp-raw"><div class="insp-raw-inner"><div class="insp-raw-row is-mark"><span class="insp-raw-n">{e.line[id] + 1}</span><span class="insp-raw-t">{line}</span></div></div></div></section>
+          {fields.length > 0 ? (
+            <section><Label>Fields</Label><dl class="insp-facts">{fields.map((x) => <><dt class="insp-arg">{x.key}</dt><dd>{x.value}</dd></>)}</dl></section>
+          ) : payload ? (
+            <section><Label>Text</Label><p class="insp-evtext">{payload}</p></section>
+          ) : null}
+          <section><Label>Raw line</Label><div class="insp-raw"><div class="insp-raw-inner"><div class="insp-raw-row is-mark"><span class="insp-raw-n">{e.line[id] + 1}</span>{cells ? <><span class="insp-raw-d" /><RawText text={cells.body.trimStart()} /></> : <RawText text={line} />}</div></div></div></section>
         </>
       )}
     </div>

@@ -27,6 +27,14 @@ const width = Number(args.width ?? 1600);
 const height = Number(args.height ?? 950);
 const out = resolve(args.out ?? 'shots/shot.png');
 
+// The lock this runs under is shared by everything that screenshots on this
+// machine: never hold it for long. A stuck page or script ends the run.
+const budget = Number(args.budget ?? 150) * 1000;
+setTimeout(() => {
+  console.log(`[shot] gave up after ${budget / 1000} s (a step never finished); pass --budget <seconds> for a long script`);
+  process.exit(2);
+}, budget).unref();
+
 const server = await createServer({ server: { port: 0, strictPort: false, host: '127.0.0.1' }, logLevel: 'error' });
 await server.listen();
 const base = server.resolvedUrls.local[0].replace(/\/$/, '');

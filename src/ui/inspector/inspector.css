@@ -121,3 +121,4 @@
 .insp-cmp-tip { position: absolute; pointer-events: none; display: none; z-index: 2; padding: 4px 7px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-2); color: var(--text); font: var(--fs-small) / 1.4 var(--font-ui); white-space: nowrap; }
 .insp-cmp-tip-name { font: var(--fs-mono) var(--font-mono); }
 .insp-cmp-tip-sub { color: var(--text-2); font: var(--fs-mono) var(--font-mono); }
+.insp-evtext { margin: 4px 0 0; font: var(--fs-mono) var(--font-mono); color: var(--text); overflow-wrap: anywhere; }
