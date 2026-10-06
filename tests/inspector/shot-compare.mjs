@@ -26,17 +26,20 @@ const findMark = async (page) => {
     cs[0].dataset.big = '1';
     return { x: r.left, y: r.top, w: r.width, h: r.height };
   });
-  for (let y = box.y + 30; y < box.y + Math.min(box.h, 320); y += 4) {
-    for (let x = box.x + 4; x < box.x + box.w - 4; x += 3) {
-      await page.mouse.move(x, y);
-      const c = await page.evaluate(() => document.querySelector('canvas[data-big]').style.cursor);
-      if (c === 'pointer' || c === 'zoom-in') {
-        const tip = await page.evaluate(() => [...document.querySelectorAll('div')].find((d) => d.style.position === 'absolute' && d.style.display === 'block' && d.innerHTML.includes('event'))?.textContent ?? '');
-        if (tip.includes('event')) return { x, y, kind: c };
+  // Sweep in the page with synthetic moves: one round trip instead of thousands.
+  return page.evaluate((box) => {
+    const cv = document.querySelector('canvas[data-big]');
+    for (let y = box.y + 30; y < box.y + Math.min(box.h, 420); y += 3) {
+      for (let x = box.x + 4; x < box.x + box.w - 4; x += 2) {
+        cv.dispatchEvent(new PointerEvent('pointermove', { clientX: x, clientY: y, bubbles: true }));
+        const c = cv.style.cursor;
+        if (c !== 'pointer' && c !== 'zoom-in') continue;
+        const tip = [...document.querySelectorAll('div')].find((d) => d.style.position === 'absolute' && d.style.display === 'block' && d.innerHTML.includes('event'))?.textContent ?? '';
+        if (tip.includes('sched_switch')) return { x, y, kind: c };
       }
     }
-  }
-  return null;
+    return null;
+  }, box);
 };
 
 export default async ({ page, shot }) => {
@@ -46,29 +49,26 @@ export default async ({ page, shot }) => {
   await shot(`${P}-1-read-a`);
   // Hover the deepest-looking part of this call.
   const cv = page.locator('.insp-cmp-cv');
-  const bb = await cv.boundingBox();
+  const bb = await cv.boundingBox({ timeout: 5000 }).catch(() => (console.log('[steps] no compare canvas'), null));
   if (bb) {
     await page.mouse.move(bb.x + bb.width * 0.5, bb.y + 14 + 3 * 4);
     await page.waitForTimeout(150);
     await shot(`${P}-2-hover`);
   }
-  await page.locator('.insp-mini', { hasText: 'each to fit' }).click();
+  await page.locator('.insp-mini', { hasText: 'each to fit' }).click({ timeout: 5000 }).catch(() => console.log('[steps] toggle click timed out'));
   await page.waitForTimeout(200);
   await shot(`${P}-3-fit`);
-  await page.locator('.insp-mini', { hasText: 'same scale' }).click();
-  await nextRead(page);
-  await page.waitForTimeout(400);
-  await scrollTo(page, 'beside a typical');
-  await shot(`${P}-4-read-b`);
-  if (process.env.SHOT_SKIP_EVENTS) return;
+  await page.locator('.insp-mini', { hasText: 'same scale' }).click({ timeout: 5000 }).catch(() => console.log('[steps] toggle click timed out'));
+  if (!process.env.SHOT_SKIP_EVENTS) {
   // Events: zoom to the selected read, then click a mark.
-  await page.locator('canvas').first().hover().catch(() => {});
+  await page.locator('canvas').first().hover({ timeout: 5000 }).catch(() => {});
   await page.evaluate(() => document.activeElement && document.activeElement.blur());
   await page.keyboard.press('f');
   await page.waitForTimeout(600);
   for (let pass = 0; pass < 3; pass++) {
     const m = await findMark(page);
     if (!m) { console.log('[steps] no event mark found'); break; }
+    await page.mouse.move(m.x, m.y);
     await page.waitForTimeout(120);
     await shot(`${P}-5-mark-tip`);
     await page.mouse.click(m.x, m.y);
@@ -76,4 +76,11 @@ export default async ({ page, shot }) => {
     if (m.kind === 'pointer') break;
   }
   await shot(`${P}-6-event`);
+  }
+  await page.keyboard.press('0');
+  await page.waitForTimeout(300);
+  await nextRead(page);
+  await page.waitForTimeout(400);
+  await scrollTo(page, 'beside a typical');
+  await shot(`${P}-4-read-b`);
 };

@@ -136,8 +136,9 @@ on the host.
 
 `examples/traces/README.md` says exactly how each file was made, and what the
 right answer is for the one called *the mystery*. `lab/` is also how the
-write-up of how ftrace works got its evidence:
-**[ftrace](https://astrolabe.avicenna.space/Zombies/ftrace)**.
+write-up of how ftrace works got its evidence: **[ftrace, built from
+nothing](https://astrolabe.avicenna.space/Zombies/ftrace)** (a copy is in
+[`docs/ftrace.md`](docs/ftrace.md)).
 
 ## Limits, honestly
 

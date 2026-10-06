@@ -73,8 +73,9 @@ One screen, four regions, all linked through one selection.
 - **Story**: the folded tree described above, virtualised, keyboard-driven.
 - **Inspector**: for a call — name, arguments and return value when printed,
   duration with the self/children/off-CPU/interrupt split, where it sits among
-  its peers (a histogram with a mark), "why this one was slow", and the raw
-  trace lines. For a function — its statistics, callers, callees, slowest calls.
+  its peers (a histogram with a mark), "why this one was slow", the call
+  drawn beside a typical call of the same function on one time scale, and the
+  raw trace lines. For a function — its statistics, callers, callees, slowest calls.
 - **Empty state**: a drop target, the sentence "nothing is uploaded", two demo
   traces, and the one command that records a good trace.
 

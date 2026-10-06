@@ -9,24 +9,25 @@ const rows = [
   ['function_graph, below 1 unrelated function', 627.0, true],
   ['function_graph, every function', 2439.1, false],
 ];
-const W = 1600, pad = 60, labelW = 520, rowH = 62, top = 120, max = 2600;
-const x0 = pad + labelW, bw = W - x0 - 250;
-const H = top + rows.length * rowH + 80;
+const W = 760, pad = 32, rowH = 62, top = 104, max = 2600;
+const x0 = pad, bw = W - 2 * pad - 150;
+const H = top + rows.length * rowH + 44;
 const base = rows[0][1];
+const mono = "font-family:ui-monospace,'JetBrains Mono','DejaVu Sans Mono',monospace";
 let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-<style>.t{font-size:24px;font-weight:600;fill:#ededee}.s{font-size:17px;fill:#a4a4a8}.l{font-family:ui-monospace,'JetBrains Mono','DejaVu Sans Mono',monospace;font-size:18px;fill:#ededee}.v{font-family:ui-monospace,'JetBrains Mono','DejaVu Sans Mono',monospace;font-size:18px;fill:#ededee}.r{font-family:ui-monospace,'JetBrains Mono','DejaVu Sans Mono',monospace;font-size:18px;fill:#a4a4a8}.a{font-size:14px;fill:#6e6e73}</style>
-<text x="${pad}" y="56" class="t">What one getppid() costs under each tracing setup</text>
-<text x="${pad}" y="86" class="s">nanoseconds per call, median of 5 runs of 2 000 000 calls · Linux 7.1.8 in a KVM guest · lower is better</text>`;
+<style>.t{font-size:19px;font-weight:600;fill:#ededee}.s{font-size:14px;fill:#a4a4a8}.l{${mono};font-size:15px;fill:#ededee}.v{${mono};font-size:15px;fill:#ededee}.r{${mono};font-size:15px;fill:#a4a4a8}.a{font-size:12.5px;fill:#6e6e73}</style>
+<text x="${pad}" y="40" class="t">What one getppid() costs under each tracing setup</text>
+<text x="${pad}" y="64" class="s">ns per call, median of 5 runs of 2 000 000 calls · Linux 7.1.8, KVM guest</text>`;
 for (const g of [0, 500, 1000, 1500, 2000, 2500]) {
   const x = x0 + (g / max) * bw;
-  s += `<line x1="${x}" y1="${top - 8}" x2="${x}" y2="${top + rows.length * rowH - 14}" stroke="#2a2a2d"/><text x="${x}" y="${top + rows.length * rowH + 12}" text-anchor="middle" class="a">${g}</text>`;
+  s += `<line x1="${x}" y1="${top - 14}" x2="${x}" y2="${top + rows.length * rowH - 12}" stroke="#2a2a2d"/><text x="${x}" y="${top + rows.length * rowH + 8}" text-anchor="middle" class="a">${g}</text>`;
 }
-rows.forEach(([name, v, note], i) => {
+rows.forEach(([name, v], i) => {
   const y = top + i * rowH;
   const w = Math.max(3, (v / max) * bw);
-  s += `<text x="${x0 - 18}" y="${y + 24}" text-anchor="end" class="l">${name}</text>`;
-  s += `<path d="M${x0},${y + 6} h${w - 4} a4,4 0 0 1 4,4 v16 a4,4 0 0 1 -4,4 h${-(w - 4)} z" fill="#d6ad60"/>`;
-  s += `<text x="${x0 + w + 12}" y="${y + 24}" class="v">${v.toFixed(0)} ns</text><text x="${x0 + w + 96 + (v >= 1000 ? 10 : 0)}" y="${y + 24}" class="r">${(v / base).toFixed(1)}×</text>`;
+  s += `<text x="${x0 + 6}" y="${y + 4}" class="l">${name}</text>`;
+  s += `<path d="M${x0},${y + 14} h${w - 4} a4,4 0 0 1 4,4 v10 a4,4 0 0 1 -4,4 h${-(w - 4)} z" fill="#d6ad60"/>`;
+  s += `<text x="${x0 + w + 10}" y="${y + 32}" class="v">${v.toFixed(0)} ns</text><text x="${x0 + w + 10 + (v >= 1000 ? 76 : 66)}" y="${y + 32}" class="r">${(v / base).toFixed(1)}×</text>`;
 });
 s += `</svg>`;
 document.getElementById('c').innerHTML = s;
