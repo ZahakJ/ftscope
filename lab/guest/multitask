@@ -1,0 +1,6 @@
+#!/bin/sh
+# Several processes on 4 CPUs: pipes, forks, sleeps.
+for i in 1 2 3 4 5 6; do
+	( head -c 32768 /dev/urandom | md5sum; usleep $((i * 700)); echo x$i | cat | wc -c; ls /bin > /dev/null ) &
+done
+wait

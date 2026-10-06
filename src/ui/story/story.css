@@ -1,0 +1,44 @@
+.story { position: relative; height: 100%; overflow: auto; background: var(--bg); color: var(--text); font: var(--fs-ui) var(--font-ui); outline: none; }
+.story-empty { display: grid; place-items: center; color: var(--text-3); }
+.story-canvas { position: relative; min-width: 100%; }
+.story-row {
+  position: absolute; left: 0; right: 0; height: calc(var(--row) + 4px);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(150px, max-content) 22%; align-items: center; column-gap: 12px;
+  padding-right: 12px; border-left: 2px solid transparent; cursor: default; white-space: nowrap;
+}
+.story-row:hover { background: var(--surface-1); }
+.story-row.is-sel { border-left-color: var(--accent); background: var(--surface-2); }
+.story:focus .story-row.is-focus:not(.is-sel) { box-shadow: inset 0 0 0 1px var(--line-strong); }
+.story-row.is-dim { opacity: 0.38; }
+.story-guide { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.story-lead { display: flex; align-items: center; min-width: 0; overflow: hidden; }
+.story-tri { flex: none; width: 14px; color: var(--text-3); font-size: 10px; text-align: center; cursor: pointer; }
+.story-tri:hover { color: var(--accent); }
+.story-swatch { flex: none; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+.story-name { display: flex; min-width: 0; font: var(--fs-mono) var(--font-mono); }
+.story-name-head { overflow: hidden; text-overflow: ellipsis; min-width: 1ch; }
+.story-name-tail { flex: none; }
+.story-loop { overflow: hidden; text-overflow: ellipsis; display: block; }
+.story-track { font-weight: 600; color: var(--text); }
+.story-row.is-track { border-top: 1px solid var(--line); }
+.story-badge { flex: none; font: var(--fs-small) var(--font-mono); color: var(--text-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; margin-right: 6px; line-height: 15px; }
+.story-quiet { color: var(--text-3); font-style: italic; }
+.story-warn { color: var(--warn); font-size: var(--fs-small); }
+.story-q { color: var(--text-3); }
+.story-num { font: var(--fs-mono) var(--font-mono); text-align: right; color: var(--text); }
+.story-barcell { position: relative; height: 4px; background: var(--surface-1); border-radius: 1px; }
+.story-bar { position: absolute; left: 0; top: 0; bottom: 0; background: var(--line-strong); border-radius: 1px; }
+.story-row.is-sel .story-bar { background: var(--accent-dim); }
+.story-row.is-span:has(.is-out) .story-bar { background: var(--serious); }
+.story-marks { display: inline-flex; gap: 5px; margin-left: 8px; flex: none; font-size: var(--fs-small); color: var(--text-2); }
+.story-mark.is-out { color: var(--serious); font-family: var(--font-mono); }
+.story-mark.is-warn { color: var(--warn); }
+.story-dist { display: inline-flex; align-items: flex-end; gap: 1px; height: 12px; width: 40px; }
+.story-dist i { flex: 1; background: var(--text-3); min-height: 0; }
+.story-dist i.is-slow { background: var(--serious); }
+.story-row.is-event, .story-row.is-gap { height: calc(var(--row) + 4px); font-size: var(--fs-small); }
+.story-row.is-event .story-num, .story-row.is-gap .story-num { visibility: hidden; }
+/* Off-CPU is hollow, as on the timeline and in the Inspector's split. */
+.story-mark.is-off { display: inline-block; width: 8px; height: 8px; box-sizing: border-box; border: 1px solid var(--text-2); border-radius: 1px; align-self: center; }
+/* No track without a bar: rows with nothing to measure (function tracer, events) stay clean. */
+.story-barcell:not(:has(.story-bar)) { background: none; }

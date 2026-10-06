@@ -1,0 +1,5 @@
+echo '64' > buffer_size_kb
+echo 'function_graph' > current_tracer
+echo '1' > tracing_on
+# workload (unfiltered): multitask
+echo '0' > tracing_on

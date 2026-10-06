@@ -1,0 +1,3 @@
+55412 pages:224 groups: 3
+ftrace boot update time = 8983799 (ns)
+ftrace module total update time = 0 (ns)

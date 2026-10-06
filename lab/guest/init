@@ -1,0 +1,16 @@
+#!/bin/busybox sh
+# PID 1 inside the throwaway VM: mount, run experiments, ship /out to /dev/vda as a tar, power off.
+/bin/busybox --install -s /bin
+export PATH=/bin
+mount -t devtmpfs dev /dev
+exec 0</dev/console 1>/dev/console 2>&1
+mount -t proc proc /proc
+mount -t sysfs sys /sys
+mount -t tracefs tracefs /sys/kernel/tracing
+mkdir -p /out /tmp && mount -t tmpfs tmp /tmp
+echo "ftscope-lab: guest up, $(nproc) cpus, $(uname -r)"
+sh /experiments.sh 2>&1 | tee /out/guest-console.log
+echo "ftscope-lab: packing results"
+tar cf /dev/vda -C /out . && sync
+echo "ftscope-lab: done"
+poweroff -f

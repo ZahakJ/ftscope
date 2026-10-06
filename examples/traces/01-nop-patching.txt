@@ -1,0 +1,35 @@
+### (a) tracing off (current_tracer=nop)
+vfs_read         ffffffffad7b7500: 0f 1f 40 d6 0f 1f 44 00 00 48 81 ec 90 00 00 00
+    nopl -0x2a(%rax) [sealed endbr] ; nopl 0x0(%rax,%rax,1)   <- ftrace site disabled
+ksys_write       ffffffffad7b8a30: 0f 1f 40 d6 0f 1f 44 00 00 48 83 ec 30 48 89 74
+    nopl -0x2a(%rax) [sealed endbr] ; nopl 0x0(%rax,%rax,1)   <- ftrace site disabled
+do_sys_openat2   ffffffffad7b2df0: 0f 1f 44 00 00 41 55 41 89 fd 48 89 d7 41 54 49
+    nopl 0x0(%rax,%rax,1)   <- ftrace site disabled
+### (b) current_tracer=function, set_ftrace_filter=vfs_read
+vfs_read         ffffffffad7b7500: 0f 1f 40 d6 e8 f7 8a c4 12 48 81 ec 90 00 00 00
+    nopl -0x2a(%rax) [sealed endbr] ; call 0xffffffffc0400000 <ftrace_trampoline [__builtin__ftrace]+0x0>   <- ftrace site enabled
+ksys_write       ffffffffad7b8a30: 0f 1f 40 d6 0f 1f 44 00 00 48 83 ec 30 48 89 74
+    nopl -0x2a(%rax) [sealed endbr] ; nopl 0x0(%rax,%rax,1)   <- ftrace site disabled
+do_sys_openat2   ffffffffad7b2df0: 0f 1f 44 00 00 41 55 41 89 fd 48 89 d7 41 54 49
+    nopl 0x0(%rax,%rax,1)   <- ftrace site disabled
+### (c) back to current_tracer=nop
+vfs_read         ffffffffad7b7500: 0f 1f 40 d6 0f 1f 44 00 00 48 81 ec 90 00 00 00
+    nopl -0x2a(%rax) [sealed endbr] ; nopl 0x0(%rax,%rax,1)   <- ftrace site disabled
+ksys_write       ffffffffad7b8a30: 0f 1f 40 d6 0f 1f 44 00 00 48 83 ec 30 48 89 74
+    nopl -0x2a(%rax) [sealed endbr] ; nopl 0x0(%rax,%rax,1)   <- ftrace site disabled
+do_sys_openat2   ffffffffad7b2df0: 0f 1f 44 00 00 41 55 41 89 fd 48 89 d7 41 54 49
+    nopl 0x0(%rax,%rax,1)   <- ftrace site disabled
+### (d) current_tracer=function, no filter (every traceable function)
+vfs_read         ffffffffad7b7500: 0f 1f 40 d6 e8 f7 8a c4 12 48 81 ec 90 00 00 00
+    nopl -0x2a(%rax) [sealed endbr] ; call 0xffffffffc0400000 <ftrace_trampoline [__builtin__ftrace]+0x0>   <- ftrace site enabled
+ksys_write       ffffffffad7b8a30: 0f 1f 40 d6 e8 c7 75 c4 12 48 83 ec 30 48 89 74
+    nopl -0x2a(%rax) [sealed endbr] ; call 0xffffffffc0400000 <ftrace_trampoline [__builtin__ftrace]+0x0>   <- ftrace site enabled
+do_sys_openat2   ffffffffad7b2df0: e8 0b d2 c4 12 41 55 41 89 fd 48 89 d7 41 54 49
+    call 0xffffffffc0400000 <ftrace_trampoline [__builtin__ftrace]+0x0>   <- ftrace site enabled
+### (e) current_tracer=function_graph, set_graph_function=vfs_read
+vfs_read         ffffffffad7b7500: 0f 1f 40 d6 e8 f7 9a c4 12 48 81 ec 90 00 00 00
+    nopl -0x2a(%rax) [sealed endbr] ; call 0xffffffffc0401000 <ftrace_trampoline [__builtin__ftrace]+0x0>   <- ftrace site enabled
+ksys_write       ffffffffad7b8a30: 0f 1f 40 d6 e8 c7 85 c4 12 48 83 ec 30 48 89 74
+    nopl -0x2a(%rax) [sealed endbr] ; call 0xffffffffc0401000 <ftrace_trampoline [__builtin__ftrace]+0x0>   <- ftrace site enabled
+do_sys_openat2   ffffffffad7b2df0: e8 0b e2 c4 12 41 55 41 89 fd 48 89 d7 41 54 49
+    call 0xffffffffc0401000 <ftrace_trampoline [__builtin__ftrace]+0x0>   <- ftrace site enabled

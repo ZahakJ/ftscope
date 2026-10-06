@@ -1,0 +1,130 @@
+#!/bin/sh
+# ftscope-record: record a function_graph trace of one command (or of the whole
+# system for a few seconds) with the options ftscope reads best, and put the
+# kernel's tracing settings back afterwards.
+#
+#   sudo ./ftscope-record -- ls -l /tmp            # trace one command and its children
+#   sudo ./ftscope-record -s 2 -o boot.trace       # trace everything for 2 seconds
+#   sudo ./ftscope-record -g vfs_read -- cat file  # only vfs_read and what it calls
+#
+# Needs root, and a kernel with the function_graph tracer (most distro kernels).
+set -eu
+
+out=ftrace.trace
+seconds=
+graph=
+buffer_kb=16384
+retval=0
+args=0
+depth=0
+
+usage() {
+	sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'
+	cat <<'USAGE'
+
+Options:
+  -o FILE   where to write the trace (default: ftrace.trace)
+  -s SECS   trace the whole system for SECS seconds instead of one command
+  -g FUNC   trace only FUNC and everything it calls (may be a glob: 'ext4_*')
+  -d N      record at most N levels of calls (1 = just the kernel entry points)
+  -r        also record return values      (funcgraph-retval, if the kernel has it)
+  -a        also record function arguments (funcgraph-args, if the kernel has it)
+  -b KB     per-CPU buffer size in KB (default: 16384); raise it if events are lost
+USAGE
+	exit "${1:-0}"
+}
+
+while getopts o:s:g:d:b:rah opt; do
+	case $opt in
+	o) out=$OPTARG ;;
+	s) seconds=$OPTARG ;;
+	g) graph=$OPTARG ;;
+	d) depth=$OPTARG ;;
+	b) buffer_kb=$OPTARG ;;
+	r) retval=1 ;;
+	a) args=1 ;;
+	h) usage 0 ;;
+	*) usage 2 ;;
+	esac
+done
+shift $((OPTIND - 1))
+[ -n "$seconds" ] || [ $# -gt 0 ] || usage 2
+
+[ "$(id -u)" = 0 ] || { echo "ftscope-record: must run as root (try: sudo $0 ...)" >&2; exit 1; }
+
+T=/sys/kernel/tracing
+[ -e $T/current_tracer ] || mount -t tracefs nodev $T 2>/dev/null || true
+[ -e $T/current_tracer ] || { echo "ftscope-record: tracefs is not available at $T" >&2; exit 1; }
+grep -qw function_graph $T/available_tracers ||
+	{ echo "ftscope-record: this kernel has no function_graph tracer" >&2; exit 1; }
+
+# Remember what we are about to change, and put it back however we exit.
+old_tracer=$(cat $T/current_tracer)
+old_on=$(cat $T/tracing_on)
+# a never-used buffer reads as "7 (expanded: 1408)": the size to restore is the expanded one
+old_buf=$(sed 's/.*expanded: \([0-9]*\).*/\1/; s/ .*//' $T/buffer_size_kb)
+old_opts=$(cat $T/trace_options)
+old_depth=$(cat $T/max_graph_depth 2>/dev/null || echo 0)
+restore() {
+	echo 0 > $T/tracing_on
+	echo nop > $T/current_tracer
+	echo 0 > $T/events/sched/sched_switch/enable
+	echo 0 > $T/events/sched/sched_wakeup/enable
+	: > $T/set_ftrace_pid
+	: > $T/set_event_pid
+	: > $T/set_graph_function
+	echo "$old_depth" > $T/max_graph_depth 2>/dev/null || true
+	for o in $old_opts; do echo "$o" > $T/trace_options 2>/dev/null || true; done
+	echo "$old_buf" > $T/buffer_size_kb 2>/dev/null || true
+	echo "$old_tracer" > $T/current_tracer 2>/dev/null || true
+	echo "$old_on" > $T/tracing_on
+}
+trap restore EXIT
+trap 'exit 130' INT TERM
+
+opt() { [ -e "$T/options/$1" ] && echo 1 > "$T/options/$1"; }
+
+echo 0 > $T/tracing_on
+echo nop > $T/current_tracer
+: > $T/trace
+echo "$buffer_kb" > $T/buffer_size_kb
+echo function_graph > $T/current_tracer
+opt funcgraph-abstime || true   # real timestamps on every line
+opt funcgraph-proc || true      # which task each line belongs to
+opt funcgraph-tail || true      # name on every closing brace
+if [ $retval = 1 ]; then opt funcgraph-retval || echo "ftscope-record: no funcgraph-retval in this kernel" >&2; fi
+if [ $args = 1 ]; then opt funcgraph-args || echo "ftscope-record: no funcgraph-args in this kernel" >&2; fi
+if [ -n "$graph" ]; then echo "$graph" > $T/set_graph_function; fi
+echo "$depth" > $T/max_graph_depth
+# Context switches, so time spent asleep is not mistaken for work.
+echo 1 > $T/events/sched/sched_switch/enable
+echo 1 > $T/events/sched/sched_wakeup/enable
+
+if [ -n "$seconds" ]; then
+	echo 1 > $T/tracing_on
+	sleep "$seconds"
+	echo 0 > $T/tracing_on
+	status=0
+else
+	opt function-fork || true   # follow children
+	opt event-fork || true
+	# Give the command back to the user who ran sudo, when we can.
+	drop=
+	if [ -n "${SUDO_UID:-}" ] && command -v setpriv >/dev/null 2>&1; then
+		drop="setpriv --reuid=$SUDO_UID --regid=${SUDO_GID:-$SUDO_UID} --init-groups --"
+	fi
+	# The shell writes its own pid into the filters and then becomes the command,
+	# so the command is traced from its very first instruction.
+	status=0
+	T=$T DROP=$drop sh -c 'echo $$ > $T/set_ftrace_pid; echo $$ > $T/set_event_pid; echo 1 > $T/tracing_on; exec $DROP "$@"' sh "$@" || status=$?
+	echo 0 > $T/tracing_on
+fi
+
+cat $T/trace > "$out"
+[ -n "${SUDO_UID:-}" ] && chown "$SUDO_UID:${SUDO_GID:-$SUDO_UID}" "$out" 2>/dev/null || true
+
+lost=$(cat $T/per_cpu/cpu*/stats 2>/dev/null | awk '/^overrun:/ { n += $2 } END { print n + 0 }')
+lines=$(wc -l < "$out")
+echo "ftscope-record: wrote $out ($lines lines)" >&2
+if [ "$lost" -gt 0 ]; then echo "ftscope-record: the buffer overflowed and $lost events were overwritten; the start of the trace is missing. Use a larger -b, a narrower -g, or -d." >&2; fi
+exit "$status"

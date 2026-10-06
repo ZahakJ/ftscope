@@ -1,0 +1,14 @@
+# config nop: w current_tracer nop
+echo 'nop' > current_tracer
+# config function: w current_tracer function
+echo 'function' > current_tracer
+# config function-filter1: w set_ftrace_filter tcp_sendmsg; w current_tracer function
+echo 'tcp_sendmsg' > set_ftrace_filter
+echo 'function' > current_tracer
+# config function_graph: w current_tracer function_graph
+echo 'function_graph' > current_tracer
+# config function_graph-filter1: w set_graph_function tcp_sendmsg; w current_tracer function_graph
+echo 'tcp_sendmsg' > set_graph_function
+echo 'function_graph' > current_tracer
+# config events-sched_switch: w events/sched/sched_switch/enable 1
+echo '1' > events/sched/sched_switch/enable

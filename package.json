@@ -1,0 +1,30 @@
+{
+  "name": "ftscope",
+  "version": "0.1.0",
+  "description": "See what an ftrace says: a browser-only viewer that folds repetition and explains the slow calls.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:single": "SINGLE=1 vite build && mv dist-single/index.html dist-single/ftscope.html",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "shot": "flock /tmp/ftscope-browser.lock node scripts/shot.mjs"
+  },
+  "dependencies": {
+    "@preact/signals": "^2.0.0",
+    "preact": "^10.25.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.9.0",
+    "@types/node": "^26.6.4",
+    "playwright-core": "^1.50.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "vite-plugin-singlefile": "^2.1.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+echo 'function_graph' > current_tracer
+echo 'funcgraph-abstime' > trace_options
+echo 'funcgraph-proc' > trace_options
+echo 'funcgraph-cpu' > trace_options
+echo 'funcgraph-duration' > trace_options
+echo 'funcgraph-irqs' > trace_options
+echo 'funcgraph-tail' > trace_options
+echo 'funcgraph-retval' > trace_options
+echo 'funcgraph-args' > trace_options
+echo 'funcgraph-retaddr' > trace_options
+# workload (pid-filtered): cat /proc/version
+sh -c 'echo $$ > set_ftrace_pid; echo $$ > set_event_pid; echo 1 > tracing_on; exec cat /proc/version'
+echo 0 > tracing_on

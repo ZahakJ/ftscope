@@ -1,0 +1,128 @@
+/* Design tokens. Neutral greys with one gold accent; no tint on surfaces or text.
+   Canvas code reads these with getComputedStyle(document.documentElement). */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0d0d0e;
+  --surface-1: #141415;
+  --surface-2: #1b1b1d;
+  --surface-3: #252527;
+  --line: #2a2a2d;
+  --line-strong: #3a3a3e;
+
+  --text: #ededee;
+  --text-2: #a4a4a8;
+  --text-3: #6e6e73;
+
+  --accent: #d6ad60;
+  --accent-dim: #8a7140;
+  --accent-ink: #171204;
+
+  /* status: never used as a category colour */
+  --ok: #3fb950;
+  --warn: #fab219;
+  --serious: #ec835a;
+  --critical: #e5484d;
+
+  /* kernel subsystems — fixed order, index = Category in core/model.ts */
+  --cat-other: #5b5b61;
+  --cat-entry: #7d7d84;
+  --cat-fs: #3987e5;
+  --cat-block: #d95926;
+  --cat-mm: #199e70;
+  --cat-sched: #c98500;
+  --cat-net: #d55181;
+  --cat-sync: #5f9e2f;
+  --cat-irq: #9085e9;
+
+  /* how much of a category colour goes into a filled call box (rest is --surface-1) */
+  --cat-fill: 0.46;
+
+  /* surprise ramp: typical → slow among peers (one hue, grey at zero) */
+  --heat-0: #3a3a3e;
+  --heat-1: #6b5a3a;
+  --heat-2: #a67c2e;
+  --heat-3: #e09a1f;
+  --heat-4: #ffc24a;
+
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'SF Mono', 'Cascadia Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --fs-ui: 13px;
+  --fs-small: 11.5px;
+  --fs-mono: 12px;
+
+  --radius: 6px;
+  --row: 18px; /* height of one call depth in the timeline, and of one Story row + 4 */
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --bg: #f6f6f6;
+    --surface-1: #ffffff;
+    --surface-2: #f0f0f1;
+    --surface-3: #e6e6e8;
+    --line: #dededf;
+    --line-strong: #c4c4c8;
+    --text: #151516;
+    --text-2: #55555a;
+    --text-3: #8a8a90;
+    --accent: #9a6f14;
+    --accent-dim: #c9a557;
+    --accent-ink: #ffffff;
+    --ok: #1a7f37;
+    --warn: #b77900;
+    --serious: #c2571f;
+    --critical: #c92a2f;
+    --cat-other: #a9a9af;
+    --cat-entry: #8b8b92;
+    --cat-fs: #2a78d6;
+    --cat-block: #eb6834;
+    --cat-mm: #1baf7a;
+    --cat-sched: #eda100;
+    --cat-net: #e87ba4;
+    --cat-sync: #4f9a1c;
+    --cat-irq: #6a5acd;
+    --cat-fill: 0.34;
+    --heat-0: #dcdcde;
+    --heat-1: #e6cf9c;
+    --heat-2: #e0ae52;
+    --heat-3: #d48a10;
+    --heat-4: #a85d00;
+  }
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f6f6f6;
+  --surface-1: #ffffff;
+  --surface-2: #f0f0f1;
+  --surface-3: #e6e6e8;
+  --line: #dededf;
+  --line-strong: #c4c4c8;
+  --text: #151516;
+  --text-2: #55555a;
+  --text-3: #8a8a90;
+  --accent: #9a6f14;
+  --accent-dim: #c9a557;
+  --accent-ink: #ffffff;
+  --ok: #1a7f37;
+  --warn: #b77900;
+  --serious: #c2571f;
+  --critical: #c92a2f;
+  --cat-other: #a9a9af;
+  --cat-entry: #8b8b92;
+  --cat-fs: #2a78d6;
+  --cat-block: #eb6834;
+  --cat-mm: #1baf7a;
+  --cat-sched: #eda100;
+  --cat-net: #e87ba4;
+  --cat-sync: #4f9a1c;
+  --cat-irq: #6a5acd;
+  --cat-fill: 0.34;
+  --heat-0: #dcdcde;
+  --heat-1: #e6cf9c;
+  --heat-2: #e0ae52;
+  --heat-3: #d48a10;
+  --heat-4: #a85d00;
+}

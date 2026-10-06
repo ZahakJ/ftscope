@@ -1,0 +1,279 @@
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 267/267   #P:4
+#
+#                                _-----=> irqs-off/BH-disabled
+#                               / _----=> need-resched
+#                              | / _---=> hardirq/softirq
+#                              || / _--=> preempt-depth
+#                              ||| / _-=> migrate-disable
+#                              |||| /     delay
+#           TASK-PID     CPU#  |||||  TIMESTAMP  FUNCTION
+#              | |         |   |||||     |         |
+          <idle>-0       [000] d..2.    85.669222: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=sh next_pid=639 next_prio=120
+              sh-87      [003] d..2.    85.669231: sched_switch: prev_comm=sh prev_pid=87 prev_prio=120 prev_state=S ==> next_comm=swapper/3 next_pid=0 next_prio=120
+       multitask-639     [000] dNs4.    85.669399: sched_wakeup: comm=rcu_preempt pid=16 prio=98 target_cpu=000
+       multitask-639     [000] d..2.    85.669401: sched_switch: prev_comm=multitask prev_pid=639 prev_prio=120 prev_state=R+ ==> next_comm=rcu_preempt next_pid=16 next_prio=98
+     rcu_preempt-16      [000] d..2.    85.669405: sched_switch: prev_comm=rcu_preempt prev_pid=16 prev_prio=98 prev_state=I ==> next_comm=multitask next_pid=639 next_prio=120
+          <idle>-0       [001] d..2.    85.669488: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=640 next_prio=120
+          <idle>-0       [002] d..2.    85.669538: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=641 next_prio=120
+          <idle>-0       [003] d..2.    85.669575: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=642 next_prio=120
+              ls-640     [001] d..2.    85.669632: sched_switch: prev_comm=multitask prev_pid=640 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=644 next_prio=120
+              ls-641     [002] d..2.    85.669672: sched_switch: prev_comm=multitask prev_pid=641 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=645 next_prio=120
+       multitask-639     [000] d..2.    85.669771: sched_switch: prev_comm=multitask prev_pid=639 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=643 next_prio=120
+          md5sum-644     [001] d..2.    85.669828: sched_switch: prev_comm=md5sum prev_pid=644 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=649 next_prio=120
+            head-642     [003] d..4.    85.669831: sched_wakeup: comm=md5sum pid=644 prio=120 target_cpu=001
+              ls-643     [000] d..2.    85.669927: sched_switch: prev_comm=multitask prev_pid=643 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=646 next_prio=120
+            head-642     [003] d..2.    85.669941: sched_switch: prev_comm=head prev_pid=642 prev_prio=120 prev_state=R+ ==> next_comm=multitask next_pid=648 next_prio=120
+              ls-649     [001] d..2.    85.669978: sched_switch: prev_comm=multitask prev_pid=649 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=652 next_prio=120
+            head-645     [002] d..2.    85.670033: sched_switch: prev_comm=head prev_pid=645 prev_prio=120 prev_state=R+ ==> next_comm=multitask next_pid=647 next_prio=120
+              ls-648     [003] d..2.    85.670067: sched_switch: prev_comm=multitask prev_pid=648 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=650 next_prio=120
+              ls-646     [000] d..2.    85.670068: sched_switch: prev_comm=multitask prev_pid=646 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=651 next_prio=120
+            head-650     [003] dN.4.    85.670124: sched_wakeup: comm=migration/3 pid=38 prio=0 target_cpu=003
+            head-650     [003] d..2.    85.670125: sched_switch: prev_comm=multitask prev_pid=650 prev_prio=120 prev_state=R+ ==> next_comm=migration/3 next_pid=38 next_prio=0
+     migration/3-38      [003] d..2.    85.670131: sched_switch: prev_comm=migration/3 prev_pid=38 prev_prio=0 prev_state=S ==> next_comm=multitask next_pid=654 next_prio=120
+          md5sum-651     [000] d..2.    85.670253: sched_switch: prev_comm=md5sum prev_pid=651 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=657 next_prio=120
+          md5sum-647     [002] d..2.    85.670264: sched_switch: prev_comm=md5sum prev_pid=647 prev_prio=120 prev_state=R+ ==> next_comm=multitask next_pid=650 next_prio=120
+            head-650     [002] d..4.    85.670354: sched_wakeup: comm=md5sum pid=651 prio=120 target_cpu=000
+            head-654     [003] d.s4.    85.670396: sched_wakeup: comm=kworker/3:1 pid=50 prio=120 target_cpu=003
+            head-652     [001] d..2.    85.670443: sched_switch: prev_comm=head prev_pid=652 prev_prio=120 prev_state=R+ ==> next_comm=md5sum next_pid=644 next_prio=120
+          md5sum-657     [000] d..2.    85.670504: sched_switch: prev_comm=md5sum prev_pid=657 prev_prio=120 prev_state=S ==> next_comm=md5sum next_pid=651 next_prio=120
+            head-654     [003] d..4.    85.670510: sched_wakeup: comm=md5sum pid=657 prio=120 target_cpu=000
+          md5sum-644     [001] d..5.    85.670513: sched_wakeup: comm=multitask pid=640 prio=120 target_cpu=001
+            head-654     [003] d..2.    85.670514: sched_switch: prev_comm=head prev_pid=654 prev_prio=120 prev_state=R+ ==> next_comm=head next_pid=642 next_prio=120
+          md5sum-644     [001] d..2.    85.670516: sched_switch: prev_comm=md5sum prev_pid=644 prev_prio=120 prev_state=Z ==> next_comm=multitask next_pid=656 next_prio=120
+            head-642     [003] d..2.    85.670517: sched_switch: prev_comm=head prev_pid=642 prev_prio=120 prev_state=Z ==> next_comm=multitask next_pid=655 next_prio=120
+          md5sum-651     [000] d..2.    85.670576: sched_switch: prev_comm=md5sum prev_pid=651 prev_prio=120 prev_state=S ==> next_comm=md5sum next_pid=657 next_prio=120
+            head-650     [002] d..4.    85.670581: sched_wakeup: comm=md5sum pid=651 prio=120 target_cpu=000
+          md5sum-657     [000] d..2.    85.670584: sched_switch: prev_comm=md5sum prev_pid=657 prev_prio=120 prev_state=R+ ==> next_comm=md5sum next_pid=651 next_prio=120
+          md5sum-651     [000] d..2.    85.670588: sched_switch: prev_comm=md5sum prev_pid=651 prev_prio=120 prev_state=S ==> next_comm=md5sum next_pid=657 next_prio=120
+            head-650     [002] d..4.    85.670600: sched_wakeup: comm=md5sum pid=651 prio=120 target_cpu=000
+          md5sum-657     [000] d..2.    85.670603: sched_switch: prev_comm=md5sum prev_pid=657 prev_prio=120 prev_state=R+ ==> next_comm=md5sum next_pid=651 next_prio=120
+            head-650     [002] d..2.    85.670603: sched_switch: prev_comm=head prev_pid=650 prev_prio=120 prev_state=R+ ==> next_comm=md5sum next_pid=647 next_prio=120
+          md5sum-647     [002] d..5.    85.670606: sched_wakeup: comm=multitask pid=641 prio=120 target_cpu=002
+          md5sum-647     [002] d..2.    85.670608: sched_switch: prev_comm=md5sum prev_pid=647 prev_prio=120 prev_state=Z ==> next_comm=multitask next_pid=653 next_prio=120
+          md5sum-651     [000] d..2.    85.670644: sched_switch: prev_comm=md5sum prev_pid=651 prev_prio=120 prev_state=R+ ==> next_comm=md5sum next_pid=657 next_prio=120
+          md5sum-657     [000] d..2.    85.670673: sched_switch: prev_comm=md5sum prev_pid=657 prev_prio=120 prev_state=R+ ==> next_comm=md5sum next_pid=651 next_prio=120
+          md5sum-651     [000] d..5.    85.670676: sched_wakeup: comm=multitask pid=643 prio=120 target_cpu=000
+          md5sum-651     [000] d..2.    85.670679: sched_switch: prev_comm=md5sum prev_pid=651 prev_prio=120 prev_state=Z ==> next_comm=multitask next_pid=643 next_prio=120
+              ls-643     [000] d..2.    85.670693: sched_switch: prev_comm=multitask prev_pid=643 prev_prio=120 prev_state=S ==> next_comm=md5sum next_pid=657 next_prio=120
+          md5sum-656     [001] d..2.    85.670693: sched_switch: prev_comm=md5sum prev_pid=656 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=640 next_prio=120
+          md5sum-657     [000] d..5.    85.670696: sched_wakeup: comm=multitask pid=646 prio=120 target_cpu=000
+            head-655     [003] d..4.    85.670697: sched_wakeup: comm=md5sum pid=656 prio=120 target_cpu=001
+          md5sum-657     [000] d..2.    85.670697: sched_switch: prev_comm=md5sum prev_pid=657 prev_prio=120 prev_state=Z ==> next_comm=multitask next_pid=646 next_prio=120
+              ls-646     [000] d..2.    85.670711: sched_switch: prev_comm=multitask prev_pid=646 prev_prio=120 prev_state=S ==> next_comm=head next_pid=645 next_prio=120
+            head-645     [000] d..2.    85.670715: sched_switch: prev_comm=head prev_pid=645 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [000] d..2.    85.670754: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=658 next_prio=120
+              ls-640     [001] d..2.    85.670762: sched_switch: prev_comm=multitask prev_pid=640 prev_prio=120 prev_state=S ==> next_comm=md5sum next_pid=656 next_prio=120
+          md5sum-656     [001] d..2.    85.670788: sched_switch: prev_comm=md5sum prev_pid=656 prev_prio=120 prev_state=S ==> next_comm=head next_pid=652 next_prio=120
+            head-655     [003] d..4.    85.670792: sched_wakeup: comm=md5sum pid=656 prio=120 target_cpu=001
+            head-652     [001] dn.5.    85.670795: sched_wakeup: comm=multitask pid=649 prio=120 target_cpu=001
+            head-652     [001] d..2.    85.670798: sched_switch: prev_comm=head prev_pid=652 prev_prio=120 prev_state=R+ ==> next_comm=md5sum next_pid=656 next_prio=120
+          md5sum-656     [001] d..2.    85.670803: sched_switch: prev_comm=md5sum prev_pid=656 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=649 next_prio=120
+            head-655     [003] d..4.    85.670805: sched_wakeup: comm=md5sum pid=656 prio=120 target_cpu=001
+              ls-649     [001] d..2.    85.670814: sched_switch: prev_comm=multitask prev_pid=649 prev_prio=120 prev_state=S ==> next_comm=md5sum next_pid=656 next_prio=120
+          md5sum-656     [001] d..2.    85.670821: sched_switch: prev_comm=md5sum prev_pid=656 prev_prio=120 prev_state=S ==> next_comm=head next_pid=652 next_prio=120
+            head-655     [003] d..4.    85.670824: sched_wakeup: comm=md5sum pid=656 prio=120 target_cpu=001
+            head-652     [001] d..2.    85.670826: sched_switch: prev_comm=head prev_pid=652 prev_prio=120 prev_state=X ==> next_comm=md5sum next_pid=656 next_prio=120
+          md5sum-653     [002] d..5.    85.670828: sched_wakeup: comm=multitask pid=649 prio=120 target_cpu=001
+          md5sum-653     [002] d..2.    85.670829: sched_switch: prev_comm=md5sum prev_pid=653 prev_prio=120 prev_state=Z ==> next_comm=multitask next_pid=641 next_prio=120
+          md5sum-656     [001] d..2.    85.670834: sched_switch: prev_comm=md5sum prev_pid=656 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=649 next_prio=120
+            head-655     [003] d..4.    85.670836: sched_wakeup: comm=md5sum pid=656 prio=120 target_cpu=001
+              ls-641     [002] d..2.    85.670884: sched_switch: prev_comm=multitask prev_pid=641 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=659 next_prio=120
+          usleep-658     [000] d..2.    85.670891: sched_switch: prev_comm=usleep prev_pid=658 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+            head-655     [003] d..2.    85.670895: sched_switch: prev_comm=head prev_pid=655 prev_prio=120 prev_state=R+ ==> next_comm=kworker/3:1 next_pid=50 next_prio=120
+     kworker/3:1-50      [003] d..2.    85.670898: sched_switch: prev_comm=kworker/3:1 prev_pid=50 prev_prio=120 prev_state=D ==> next_comm=head next_pid=654 next_prio=120
+              ls-649     [001] d..2.    85.670898: sched_switch: prev_comm=multitask prev_pid=649 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=660 next_prio=120
+            head-654     [003] d..2.    85.670902: sched_switch: prev_comm=head prev_pid=654 prev_prio=120 prev_state=Z ==> next_comm=head next_pid=655 next_prio=120
+          <idle>-0       [000] dNh2.    85.670903: sched_wakeup: comm=multitask pid=646 prio=120 target_cpu=000
+            head-655     [003] dN.5.    85.670904: sched_wakeup: comm=multitask pid=648 prio=120 target_cpu=003
+          <idle>-0       [000] d..2.    85.670905: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=646 next_prio=120
+            head-655     [003] d..2.    85.670905: sched_switch: prev_comm=head prev_pid=655 prev_prio=120 prev_state=R+ ==> next_comm=multitask next_pid=648 next_prio=120
+              ls-648     [003] d..2.    85.670915: sched_switch: prev_comm=multitask prev_pid=648 prev_prio=120 prev_state=S ==> next_comm=head next_pid=655 next_prio=120
+            head-655     [003] d..2.    85.670918: sched_switch: prev_comm=head prev_pid=655 prev_prio=120 prev_state=X ==> next_comm=swapper/3 next_pid=0 next_prio=120
+          usleep-660     [001] dN.4.    85.670944: sched_wakeup: comm=migration/1 pid=26 prio=0 target_cpu=001
+          usleep-660     [001] d..2.    85.670945: sched_switch: prev_comm=multitask prev_pid=660 prev_prio=120 prev_state=R+ ==> next_comm=migration/1 next_pid=26 next_prio=0
+     migration/1-26      [001] d..2.    85.670955: sched_switch: prev_comm=migration/1 prev_pid=26 prev_prio=0 prev_state=S ==> next_comm=md5sum next_pid=656 next_prio=120
+          <idle>-0       [003] d..2.    85.670955: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=661 next_prio=120
+              ls-646     [000] d..2.    85.670963: sched_switch: prev_comm=multitask prev_pid=646 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          usleep-659     [002] d..2.    85.670991: sched_switch: prev_comm=usleep prev_pid=659 prev_prio=120 prev_state=S ==> next_comm=head next_pid=650 next_prio=120
+          <idle>-0       [000] dNh2.    85.670997: sched_wakeup: comm=multitask pid=643 prio=120 target_cpu=000
+            head-650     [002] d..2.    85.670997: sched_switch: prev_comm=head prev_pid=650 prev_prio=120 prev_state=Z ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       [000] d..2.    85.670998: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=643 next_prio=120
+          usleep-661     [003] dN.4.    85.671001: sched_wakeup: comm=migration/3 pid=38 prio=0 target_cpu=003
+          usleep-661     [003] d..2.    85.671002: sched_switch: prev_comm=multitask prev_pid=661 prev_prio=120 prev_state=R+ ==> next_comm=migration/3 next_pid=38 next_prio=0
+     migration/3-38      [003] d..2.    85.671007: sched_switch: prev_comm=migration/3 prev_pid=38 prev_prio=0 prev_state=S ==> next_comm=multitask next_pid=660 next_prio=120
+          <idle>-0       [002] d..2.    85.671008: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=661 next_prio=120
+          md5sum-656     [001] d..5.    85.671018: sched_wakeup: comm=multitask pid=648 prio=120 target_cpu=003
+          usleep-660     [003] d..2.    85.671020: sched_switch: prev_comm=multitask prev_pid=660 prev_prio=120 prev_state=R+ ==> next_comm=multitask next_pid=648 next_prio=120
+          md5sum-656     [001] d..2.    85.671022: sched_switch: prev_comm=md5sum prev_pid=656 prev_prio=120 prev_state=X ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [001] d..2.    85.671049: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=662 next_prio=120
+              ls-643     [000] d..2.    85.671059: sched_switch: prev_comm=multitask prev_pid=643 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          usleep-661     [002] d..2.    85.671076: sched_switch: prev_comm=usleep prev_pid=661 prev_prio=120 prev_state=S ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       [000] d..2.    85.671082: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=663 next_prio=120
+              ls-648     [003] d..2.    85.671088: sched_switch: prev_comm=multitask prev_pid=648 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=660 next_prio=120
+          usleep-660     [003] d..2.    85.671165: sched_switch: prev_comm=usleep prev_pid=660 prev_prio=120 prev_state=S ==> next_comm=swapper/3 next_pid=0 next_prio=120
+          usleep-662     [001] d..2.    85.671187: sched_switch: prev_comm=usleep prev_pid=662 prev_prio=120 prev_state=S ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          usleep-663     [000] d..2.    85.671209: sched_switch: prev_comm=usleep prev_pid=663 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.671400: sched_wakeup: comm=rcu_preempt pid=16 prio=98 target_cpu=000
+          <idle>-0       [000] d..2.    85.671402: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=rcu_preempt next_pid=16 next_prio=98
+     rcu_preempt-16      [000] d..2.    85.671405: sched_switch: prev_comm=rcu_preempt prev_pid=16 prev_prio=98 prev_state=I ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh4.    85.671689: sched_wakeup: comm=usleep pid=658 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.671691: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=usleep next_pid=658 next_prio=120
+          usleep-658     [000] d..2.    85.671722: sched_switch: prev_comm=usleep prev_pid=658 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [001] dNh2.    85.671725: sched_wakeup: comm=multitask pid=640 prio=120 target_cpu=001
+          <idle>-0       [001] d..2.    85.671726: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=640 next_prio=120
+          <idle>-0       [003] d..2.    85.671799: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=664 next_prio=120
+          <idle>-0       [002] d..2.    85.671838: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=665 next_prio=120
+          <idle>-0       [000] d..2.    85.671877: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=666 next_prio=120
+       multitask-664     [003] d..2.    85.671886: sched_switch: prev_comm=multitask prev_pid=664 prev_prio=120 prev_state=Z ==> next_comm=swapper/3 next_pid=0 next_prio=120
+              ls-640     [001] d..2.    85.671897: sched_switch: prev_comm=multitask prev_pid=640 prev_prio=120 prev_state=S ==> next_comm=swapper/1 next_pid=0 next_prio=120
+             cat-665     [002] d..2.    85.672000: sched_switch: prev_comm=cat prev_pid=665 prev_prio=120 prev_state=Z ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       [001] dNh2.    85.672008: sched_wakeup: comm=multitask pid=640 prio=120 target_cpu=001
+          <idle>-0       [001] d..2.    85.672010: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=640 next_prio=120
+              ls-640     [001] d..2.    85.672019: sched_switch: prev_comm=multitask prev_pid=640 prev_prio=120 prev_state=S ==> next_comm=swapper/1 next_pid=0 next_prio=120
+              wc-666     [000] d..2.    85.672078: sched_switch: prev_comm=wc prev_pid=666 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [001] dNh2.    85.672081: sched_wakeup: comm=multitask pid=640 prio=120 target_cpu=001
+          <idle>-0       [001] d..2.    85.672083: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=640 next_prio=120
+          <idle>-0       [002] dNh4.    85.672392: sched_wakeup: comm=usleep pid=659 prio=120 target_cpu=002
+          <idle>-0       [002] d..2.    85.672396: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=usleep next_pid=659 next_prio=120
+          usleep-659     [002] dN.5.    85.672418: sched_wakeup: comm=multitask pid=641 prio=120 target_cpu=002
+          usleep-659     [002] d..2.    85.672419: sched_switch: prev_comm=usleep prev_pid=659 prev_prio=120 prev_state=R+ ==> next_comm=multitask next_pid=641 next_prio=120
+          <idle>-0       [003] d..2.    85.672475: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=667 next_prio=120
+          <idle>-0       [000] d..2.    85.672518: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=668 next_prio=120
+              ls-641     [002] d..2.    85.672562: sched_switch: prev_comm=multitask prev_pid=641 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=669 next_prio=120
+       multitask-667     [003] d..5.    85.672565: sched_wakeup: comm=multitask pid=641 prio=120 target_cpu=002
+       multitask-667     [003] d..2.    85.672568: sched_switch: prev_comm=multitask prev_pid=667 prev_prio=120 prev_state=Z ==> next_comm=swapper/3 next_pid=0 next_prio=120
+              wc-669     [002] dN.4.    85.672613: sched_wakeup: comm=migration/2 pid=32 prio=0 target_cpu=002
+              wc-669     [002] d..2.    85.672614: sched_switch: prev_comm=multitask prev_pid=669 prev_prio=120 prev_state=R+ ==> next_comm=migration/2 next_pid=32 next_prio=0
+     migration/2-32      [002] d..2.    85.672621: sched_switch: prev_comm=migration/2 prev_pid=32 prev_prio=0 prev_state=S ==> next_comm=usleep next_pid=659 next_prio=120
+          usleep-659     [002] d..2.    85.672623: sched_switch: prev_comm=usleep prev_pid=659 prev_prio=120 prev_state=X ==> next_comm=multitask next_pid=641 next_prio=120
+          <idle>-0       [003] d..2.    85.672626: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=669 next_prio=120
+              ls-641     [002] d..2.    85.672631: sched_switch: prev_comm=multitask prev_pid=641 prev_prio=120 prev_state=S ==> next_comm=swapper/2 next_pid=0 next_prio=120
+             cat-668     [000] d..2.    85.672717: sched_switch: prev_comm=cat prev_pid=668 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [002] dNh2.    85.672718: sched_wakeup: comm=multitask pid=641 prio=120 target_cpu=002
+          <idle>-0       [002] d..2.    85.672719: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=641 next_prio=120
+              ls-641     [002] d..2.    85.672724: sched_switch: prev_comm=multitask prev_pid=641 prev_prio=120 prev_state=S ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       [002] dNh2.    85.672767: sched_wakeup: comm=multitask pid=641 prio=120 target_cpu=002
+          <idle>-0       [002] d..2.    85.672768: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=641 next_prio=120
+              wc-669     [003] d..2.    85.672768: sched_switch: prev_comm=wc prev_pid=669 prev_prio=120 prev_state=X ==> next_comm=swapper/3 next_pid=0 next_prio=120
+              ls-640     [001] d..2.    85.672996: sched_switch: prev_comm=ls prev_pid=640 prev_prio=120 prev_state=Z ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.673002: sched_wakeup: comm=multitask pid=639 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.673003: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=639 next_prio=120
+       multitask-639     [000] d..2.    85.673021: sched_switch: prev_comm=multitask prev_pid=639 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [001] dNh4.    85.673337: sched_wakeup: comm=usleep pid=662 prio=120 target_cpu=001
+          <idle>-0       [001] d..2.    85.673340: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=usleep next_pid=662 next_prio=120
+          usleep-662     [001] d..2.    85.673365: sched_switch: prev_comm=usleep prev_pid=662 prev_prio=120 prev_state=Z ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.673368: sched_wakeup: comm=multitask pid=643 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.673369: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=643 next_prio=120
+          <idle>-0       [003] d.s5.    85.673403: sched_wakeup: comm=rcu_preempt pid=16 prio=98 target_cpu=000
+              ls-643     [000] d..2.    85.673405: sched_switch: prev_comm=multitask prev_pid=643 prev_prio=120 prev_state=R ==> next_comm=rcu_preempt next_pid=16 next_prio=98
+     rcu_preempt-16      [000] d..2.    85.673411: sched_switch: prev_comm=rcu_preempt prev_pid=16 prev_prio=98 prev_state=I ==> next_comm=multitask next_pid=643 next_prio=120
+          <idle>-0       [003] dNh2.    85.673411: sched_wakeup: comm=kworker/3:1 pid=50 prio=120 target_cpu=003
+          <idle>-0       [003] d..2.    85.673413: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=kworker/3:1 next_pid=50 next_prio=120
+     kworker/3:1-50      [003] d..2.    85.673418: sched_switch: prev_comm=kworker/3:1 prev_pid=50 prev_prio=120 prev_state=D ==> next_comm=swapper/3 next_pid=0 next_prio=120
+          <idle>-0       [001] d..2.    85.673450: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=670 next_prio=120
+          <idle>-0       [003] d..2.    85.673505: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=671 next_prio=120
+       multitask-670     [001] d..2.    85.673536: sched_switch: prev_comm=multitask prev_pid=670 prev_prio=120 prev_state=Z ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [001] d..2.    85.673550: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=672 next_prio=120
+              ls-643     [000] d..2.    85.673569: sched_switch: prev_comm=multitask prev_pid=643 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+              ls-641     [002] d..2.    85.673600: sched_switch: prev_comm=ls prev_pid=641 prev_prio=120 prev_state=Z ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.673604: sched_wakeup: comm=multitask pid=639 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.673606: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=639 next_prio=120
+       multitask-639     [000] d..2.    85.673615: sched_switch: prev_comm=multitask prev_pid=639 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+              wc-672     [001] d..2.    85.673691: sched_switch: prev_comm=wc prev_pid=672 prev_prio=120 prev_state=S ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [001] dNh2.    85.673701: sched_wakeup: comm=wc pid=672 prio=120 target_cpu=001
+          <idle>-0       [001] d..2.    85.673702: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=wc next_pid=672 next_prio=120
+             cat-671     [003] d..2.    85.673711: sched_switch: prev_comm=cat prev_pid=671 prev_prio=120 prev_state=Z ==> next_comm=swapper/3 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.673714: sched_wakeup: comm=multitask pid=643 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.673716: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=643 next_prio=120
+              ls-643     [000] d..2.    85.673723: sched_switch: prev_comm=multitask prev_pid=643 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.673732: sched_wakeup: comm=multitask pid=643 prio=120 target_cpu=000
+              wc-672     [001] d..2.    85.673732: sched_switch: prev_comm=wc prev_pid=672 prev_prio=120 prev_state=Z ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [000] d..2.    85.673733: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=643 next_prio=120
+          <idle>-0       [002] dNh4.    85.673929: sched_wakeup: comm=usleep pid=661 prio=120 target_cpu=002
+          <idle>-0       [002] d..2.    85.673933: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=usleep next_pid=661 next_prio=120
+          usleep-661     [002] d..5.    85.673959: sched_wakeup: comm=multitask pid=646 prio=120 target_cpu=002
+          usleep-661     [002] d..2.    85.673961: sched_switch: prev_comm=usleep prev_pid=661 prev_prio=120 prev_state=Z ==> next_comm=multitask next_pid=646 next_prio=120
+          <idle>-0       [001] d..2.    85.674030: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=673 next_prio=120
+          <idle>-0       [003] d..2.    85.674072: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=674 next_prio=120
+              ls-646     [002] d..2.    85.674114: sched_switch: prev_comm=multitask prev_pid=646 prev_prio=120 prev_state=S ==> next_comm=multitask next_pid=675 next_prio=120
+       multitask-673     [001] d..5.    85.674122: sched_wakeup: comm=multitask pid=646 prio=120 target_cpu=002
+       multitask-673     [001] d..2.    85.674125: sched_switch: prev_comm=multitask prev_pid=673 prev_prio=120 prev_state=Z ==> next_comm=swapper/1 next_pid=0 next_prio=120
+              wc-675     [002] dN.4.    85.674165: sched_wakeup: comm=migration/2 pid=32 prio=0 target_cpu=002
+              wc-675     [002] d..2.    85.674166: sched_switch: prev_comm=multitask prev_pid=675 prev_prio=120 prev_state=R+ ==> next_comm=migration/2 next_pid=32 next_prio=0
+     migration/2-32      [002] d..2.    85.674173: sched_switch: prev_comm=migration/2 prev_pid=32 prev_prio=0 prev_state=S ==> next_comm=multitask next_pid=646 next_prio=120
+          <idle>-0       [001] d..2.    85.674177: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=675 next_prio=120
+              ls-646     [002] d..2.    85.674181: sched_switch: prev_comm=multitask prev_pid=646 prev_prio=120 prev_state=S ==> next_comm=swapper/2 next_pid=0 next_prio=120
+              wc-675     [001] d..2.    85.674276: sched_switch: prev_comm=wc prev_pid=675 prev_prio=120 prev_state=S ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [001] dNh2.    85.674286: sched_wakeup: comm=wc pid=675 prio=120 target_cpu=001
+          <idle>-0       [001] d..2.    85.674287: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=wc next_pid=675 next_prio=120
+             cat-674     [003] d..2.    85.674296: sched_switch: prev_comm=cat prev_pid=674 prev_prio=120 prev_state=Z ==> next_comm=swapper/3 next_pid=0 next_prio=120
+          <idle>-0       [002] dNh2.    85.674300: sched_wakeup: comm=multitask pid=646 prio=120 target_cpu=002
+          <idle>-0       [002] d..2.    85.674301: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=646 next_prio=120
+              ls-646     [002] d..2.    85.674305: sched_switch: prev_comm=multitask prev_pid=646 prev_prio=120 prev_state=S ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       [002] dNh2.    85.674318: sched_wakeup: comm=multitask pid=646 prio=120 target_cpu=002
+              wc-675     [001] d..2.    85.674318: sched_switch: prev_comm=wc prev_pid=675 prev_prio=120 prev_state=Z ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [002] d..2.    85.674319: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=646 next_prio=120
+          <idle>-0       [003] dNs5.    85.674409: sched_wakeup: comm=kworker/3:0 pid=40 prio=120 target_cpu=003
+          <idle>-0       [003] dNs4.    85.674411: sched_wakeup: comm=ksoftirqd/3 pid=39 prio=120 target_cpu=003
+          <idle>-0       [003] d..2.    85.674413: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=ksoftirqd/3 next_pid=39 next_prio=120
+     ksoftirqd/3-39      [003] d..2.    85.674419: sched_switch: prev_comm=ksoftirqd/3 prev_pid=39 prev_prio=120 prev_state=S ==> next_comm=kworker/3:0 next_pid=40 next_prio=120
+     kworker/3:0-40      [003] d..2.    85.674425: sched_switch: prev_comm=kworker/3:0 prev_pid=40 prev_prio=120 prev_state=I ==> next_comm=swapper/3 next_pid=0 next_prio=120
+              ls-643     [000] d..2.    85.674583: sched_switch: prev_comm=ls prev_pid=643 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [003] dNh2.    85.674589: sched_wakeup: comm=multitask pid=639 prio=120 target_cpu=003
+          <idle>-0       [003] d..2.    85.674591: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=639 next_prio=120
+       multitask-639     [003] d..2.    85.674606: sched_switch: prev_comm=multitask prev_pid=639 prev_prio=120 prev_state=S ==> next_comm=swapper/3 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh4.    85.674761: sched_wakeup: comm=usleep pid=663 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.674764: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=usleep next_pid=663 next_prio=120
+          usleep-663     [000] d..2.    85.674788: sched_switch: prev_comm=usleep prev_pid=663 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [003] dNh2.    85.674794: sched_wakeup: comm=multitask pid=648 prio=120 target_cpu=003
+          <idle>-0       [003] d..2.    85.674795: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=648 next_prio=120
+          <idle>-0       [000] d..2.    85.674846: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=676 next_prio=120
+          <idle>-0       [001] d..2.    85.674900: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=677 next_prio=120
+       multitask-676     [000] d..2.    85.674916: sched_switch: prev_comm=multitask prev_pid=676 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [000] d..2.    85.674941: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=678 next_prio=120
+              ls-648     [003] d..2.    85.674959: sched_switch: prev_comm=multitask prev_pid=648 prev_prio=120 prev_state=S ==> next_comm=swapper/3 next_pid=0 next_prio=120
+              ls-646     [002] d..2.    85.675022: sched_switch: prev_comm=ls prev_pid=646 prev_prio=120 prev_state=Z ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       [003] dNh2.    85.675023: sched_wakeup: comm=multitask pid=639 prio=120 target_cpu=003
+          <idle>-0       [003] d..2.    85.675025: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=639 next_prio=120
+       multitask-639     [003] d..2.    85.675034: sched_switch: prev_comm=multitask prev_pid=639 prev_prio=120 prev_state=S ==> next_comm=swapper/3 next_pid=0 next_prio=120
+              wc-678     [000] d..2.    85.675081: sched_switch: prev_comm=wc prev_pid=678 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.675096: sched_wakeup: comm=wc pid=678 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.675097: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=wc next_pid=678 next_prio=120
+          <idle>-0       [003] dNh2.    85.675103: sched_wakeup: comm=multitask pid=648 prio=120 target_cpu=003
+             cat-677     [001] d..2.    85.675103: sched_switch: prev_comm=cat prev_pid=677 prev_prio=120 prev_state=Z ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [003] d..2.    85.675104: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=648 next_prio=120
+              ls-648     [003] d..2.    85.675109: sched_switch: prev_comm=multitask prev_pid=648 prev_prio=120 prev_state=S ==> next_comm=swapper/3 next_pid=0 next_prio=120
+          <idle>-0       [003] dNh2.    85.675124: sched_wakeup: comm=multitask pid=648 prio=120 target_cpu=003
+              wc-678     [000] d..2.    85.675124: sched_switch: prev_comm=wc prev_pid=678 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [003] d..2.    85.675125: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=648 next_prio=120
+          <idle>-0       [001] dNH2.    85.675400: sched_wakeup: comm=usleep pid=660 prio=120 target_cpu=001
+          <idle>-0       [001] d..2.    85.675402: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=usleep next_pid=660 next_prio=120
+          usleep-660     [001] d..5.    85.675430: sched_wakeup: comm=multitask pid=649 prio=120 target_cpu=001
+          usleep-660     [001] d..2.    85.675432: sched_switch: prev_comm=usleep prev_pid=660 prev_prio=120 prev_state=Z ==> next_comm=multitask next_pid=649 next_prio=120
+          <idle>-0       [000] d..2.    85.675486: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=679 next_prio=120
+          <idle>-0       [002] d..2.    85.675533: sched_switch: prev_comm=swapper/2 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=680 next_prio=120
+       multitask-679     [000] d..2.    85.675563: sched_switch: prev_comm=multitask prev_pid=679 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [000] d..2.    85.675577: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=681 next_prio=120
+              ls-649     [001] d..2.    85.675593: sched_switch: prev_comm=multitask prev_pid=649 prev_prio=120 prev_state=S ==> next_comm=swapper/1 next_pid=0 next_prio=120
+             cat-680     [002] d..2.    85.675691: sched_switch: prev_comm=cat prev_pid=680 prev_prio=120 prev_state=Z ==> next_comm=swapper/2 next_pid=0 next_prio=120
+          <idle>-0       [001] dNh2.    85.675697: sched_wakeup: comm=multitask pid=649 prio=120 target_cpu=001
+          <idle>-0       [001] d..2.    85.675699: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=649 next_prio=120
+              ls-649     [001] d..2.    85.675707: sched_switch: prev_comm=multitask prev_pid=649 prev_prio=120 prev_state=S ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [001] dNh2.    85.675743: sched_wakeup: comm=multitask pid=649 prio=120 target_cpu=001
+              wc-681     [000] d..2.    85.675743: sched_switch: prev_comm=wc prev_pid=681 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [001] d..2.    85.675744: sched_switch: prev_comm=swapper/1 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=649 next_prio=120
+              ls-648     [003] d..2.    85.675827: sched_switch: prev_comm=ls prev_pid=648 prev_prio=120 prev_state=Z ==> next_comm=swapper/3 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.675828: sched_wakeup: comm=multitask pid=639 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.675829: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=639 next_prio=120
+       multitask-639     [000] d..2.    85.675841: sched_switch: prev_comm=multitask prev_pid=639 prev_prio=120 prev_state=S ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.676399: sched_wakeup: comm=rcu_preempt pid=16 prio=98 target_cpu=000
+          <idle>-0       [000] d..2.    85.676401: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=rcu_preempt next_pid=16 next_prio=98
+     rcu_preempt-16      [000] d..2.    85.676405: sched_switch: prev_comm=rcu_preempt prev_pid=16 prev_prio=98 prev_state=I ==> next_comm=swapper/0 next_pid=0 next_prio=120
+              ls-649     [001] d..2.    85.676519: sched_switch: prev_comm=ls prev_pid=649 prev_prio=120 prev_state=Z ==> next_comm=swapper/1 next_pid=0 next_prio=120
+          <idle>-0       [000] dNh2.    85.676523: sched_wakeup: comm=multitask pid=639 prio=120 target_cpu=000
+          <idle>-0       [000] d..2.    85.676524: sched_switch: prev_comm=swapper/0 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=multitask next_pid=639 next_prio=120
+       multitask-639     [000] d..2.    85.676569: sched_switch: prev_comm=multitask prev_pid=639 prev_prio=120 prev_state=Z ==> next_comm=swapper/0 next_pid=0 next_prio=120
+          <idle>-0       [003] dNh2.    85.676570: sched_wakeup: comm=sh pid=87 prio=120 target_cpu=003
+          <idle>-0       [003] d..2.    85.676571: sched_switch: prev_comm=swapper/3 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=sh next_pid=87 next_prio=120

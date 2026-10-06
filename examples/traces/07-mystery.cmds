@@ -1,0 +1,20 @@
+echo '0' > /sys/block/vdb/queue/read_ahead_kb
+# exec 3</dev/vdb  (hold the bdev open so its page cache survives between prep and run)
+# prep (untraced): mystery prep /dev/vdb 1000
+echo '16384' > buffer_size_kb
+echo 'function_graph' > current_tracer
+echo 'funcgraph-abstime' > trace_options
+echo 'funcgraph-proc' > trace_options
+echo 'funcgraph-retval' > trace_options
+echo 'function-fork' > trace_options
+echo 'event-fork' > trace_options
+echo '1' > events/sched/sched_switch/enable
+echo '1' > events/sched/sched_wakeup/enable
+echo '1' > events/irq/irq_handler_entry/enable
+echo '1' > events/irq/irq_handler_exit/enable
+echo '1' > events/irq/softirq_entry/enable
+echo '1' > events/irq/softirq_exit/enable
+echo '1' > events/raw_syscalls/sys_enter/enable
+echo '1' > events/raw_syscalls/sys_exit/enable
+# workload (pid-filtered): mystery run /dev/vdb 1000 > 07-mystery.latency.csv
+echo '0' > tracing_on

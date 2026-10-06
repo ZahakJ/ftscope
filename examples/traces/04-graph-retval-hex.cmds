@@ -1,0 +1,6 @@
+echo 'function_graph' > current_tracer
+echo 'funcgraph-retval' > trace_options
+echo 'funcgraph-retval-hex' > trace_options
+# workload (pid-filtered): cat /proc/version
+sh -c 'echo $$ > set_ftrace_pid; echo $$ > set_event_pid; echo 1 > tracing_on; exec cat /proc/version'
+echo 0 > tracing_on
