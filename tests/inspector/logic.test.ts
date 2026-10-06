@@ -112,3 +112,14 @@ describe('raw lines', () => {
     expect(w.tail.map((x) => x.text)).toEqual(['d', '}']);
   });
 });
+
+import { graphCells } from '../../src/ui/inspector/logic';
+describe('graphCells', () => {
+  it('splits duration and body', () => {
+    expect(graphCells(' 0)               |  vfs_read() {')).toEqual({ dur: '', body: ' vfs_read() {' });
+    expect(graphCells(' 0)   0.191 us    |    rw_verify_area();')).toEqual({ dur: '0.191 µs', body: '   rw_verify_area();' });
+    expect(graphCells(' 123.456789 |   1)  bash-12   |  + 20.40 us   |  }')).toEqual({ dur: '+ 20.40 µs', body: ' }' });
+    expect(graphCells(' ------------------------------------------')).toBeNull();
+    expect(graphCells('  bash-1 [000] ....  1.2: vfs_read <-ksys_read')).toBeNull();
+  });
+});

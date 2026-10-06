@@ -44,9 +44,9 @@ typical call and the unusual ones, by name.
 **It compares every call with the other calls of the same function**, and
 explains the slow ones. Not "this took 194 µs" but:
 
-> 186 µs slower than the typical 7.86 µs (25×). It took
-> `filemap_get_pages` → `page_cache_sync_ra`, a path 997 of 999 other calls
-> never take; it issued block I/O (`submit_bio`) and slept in `io_schedule`.
+> 186 µs slower than the typical 7.86 µs (25×). 105 µs of it was in
+> `ksys_read` → … → `filemap_get_pages` → `page_cache_sync_ra`, a path 997 of
+> 999 other calls never take; it issued block I/O (`submit_bio`).
 
 **It accounts for time honestly.** A `function_graph` duration is wall-clock
 time: it includes time asleep and any interrupt that fired inside the call.

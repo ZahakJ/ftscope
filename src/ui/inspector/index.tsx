@@ -6,8 +6,9 @@ import { CATEGORIES, F, type Trace } from '../../core/model';
 import { explain, funcDetail, profile } from '../../core/analyze';
 import { analysis, colorMode, file, hover, mode, select, selectSpan, revealSpan, selection, trace } from '../state';
 import { fmtCount, fmtDur, fmtTime } from '../format';
+import { Compare } from './compare-view';
 import {
-  ancestors, bucketUs, collapseCrumbs, eventFields, fmtPct, histGeom, irqParts, offWhere, parseRaw, peerDurs, rawWindow,
+  ancestors, bucketUs, graphCells, collapseCrumbs, eventFields, fmtPct, histGeom, irqParts, offWhere, parseRaw, peerDurs, rawWindow,
   readRaw, isNoise, sharedCut, slowerThan, stripTicks, taskWord, timeSplit, topChildren, type RawWindow,
 } from './logic';
 
@@ -169,6 +170,7 @@ function SpanView({ t, a, id }: { t: Trace; a: Analysis; id: number }) {
       )}
 
       {ex && <Why t={t} ex={ex} />}
+      {stat && stat.timed > 1 && !Number.isNaN(dur) && <Compare t={t} id={id} peers={detail.spans} />}
 
       <RawLines t={t} raw={raw} />
     </div>
@@ -313,15 +315,21 @@ function RawLines({ raw }: { t: Trace; raw: RawWindow | null }) {
   const cut = useMemo(() => sharedCut(all.map((r) => r.text)), [raw]);
   if (!raw) return null;
   const c = full ? 0 : cut;
-  const row = (r: RawWindow['head'][number]) => (
-    <div class={'insp-raw-row' + (r.mark ? ' is-mark' : '')}><span class="insp-raw-n">{r.n ?? ''}</span><RawText text={c && !isNoise(r.text) ? r.text.slice(c) : r.text} /></div>
-  );
+  const row = (r: RawWindow['head'][number]) => {
+    const cells = full ? null : graphCells(r.text);
+    return (
+      <div class={'insp-raw-row' + (r.mark ? ' is-mark' : '')}>
+        <span class="insp-raw-n">{r.n ?? ''}</span>
+        {cells ? <><span class="insp-raw-d">{cells.dur}</span><RawText text={cells.body} /></> : <RawText text={c && !isNoise(r.text) ? r.text.slice(c) : r.text} />}
+      </div>
+    );
+  };
   return (
     <section>
       <div class="insp-label-row">
         <Label>Raw lines</Label>
         <span>
-          {cut > 0 && <button class={'insp-mini' + (full ? ' is-on' : '')} title="Show the timestamp, CPU and task columns" onClick={() => setFull(!full)}>columns</button>}
+          {(cut > 0 || all.some((r) => graphCells(r.text))) && <button class={'insp-mini' + (full ? ' is-on' : '')} title="Show the timestamp, CPU and task columns" onClick={() => setFull(!full)}>columns</button>}
           <button class="insp-mini" onClick={() => copy(all.map((r) => r.text).join('\n'))}>copy</button>
         </span>
       </div>

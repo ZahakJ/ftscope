@@ -26,31 +26,36 @@ function selectFuncByName(name: string): void {
 /** `detail` with backticked names as clickable code. */
 export function Detail({ text }: { text: string }) {
   const parts = text.split(/`([^`]+)`/);
+  // An arrow belongs to the name it points at: it wraps with that chip, never alone at a line end.
+  const arrow = parts.map((p, i) => (i % 2 === 0 && i + 1 < parts.length ? /\s*→\s*$/.exec(p)?.[0] ?? '' : ''));
+  const chip = (p: string, i: number) => (
+    <code
+      key={i}
+      class="fn-link"
+      role="link"
+      tabIndex={0}
+      onClick={(e) => {
+        e.stopPropagation();
+        selectFuncByName(p);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.stopPropagation();
+          e.preventDefault();
+          selectFuncByName(p);
+        }
+      }}
+    >
+      {p}
+    </code>
+  );
   return (
     <>
       {parts.map((p, i) =>
         i % 2 ? (
-          <code
-            key={i}
-            class="fn-link"
-            role="link"
-            tabIndex={0}
-            onClick={(e) => {
-              e.stopPropagation();
-              selectFuncByName(p);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.stopPropagation();
-                e.preventDefault();
-                selectFuncByName(p);
-              }
-            }}
-          >
-            {p}
-          </code>
+          arrow[i - 1] ? <span key={i} class="fn-arrow">→{'\u00a0'}{chip(p, i)}</span> : chip(p, i)
         ) : (
-          p
+          arrow[i] ? p.slice(0, p.length - arrow[i].length) + (/^\s/.test(arrow[i]) ? ' ' : '') : p
         ),
       )}
     </>

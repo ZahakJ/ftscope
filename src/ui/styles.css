@@ -560,7 +560,9 @@ kbd {
 .brief-body p {
   margin-top: 2px;
 }
+.fn-arrow { white-space: nowrap; }
 .fn-link {
+  white-space: nowrap;
   cursor: pointer;
   padding: 0 3px;
   border-radius: 3px;

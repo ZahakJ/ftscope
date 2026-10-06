@@ -24,8 +24,9 @@ export function brief(t: Trace, a: Analysis): Insight[] {
   const tasks = new Set<number>();
   for (const tr of t.tracks) if (tr.spans > 0) tasks.add(tr.task);
   const on = t.cpus.length ? ` on ${plural(t.cpus.length, 'CPU')}` : '';
-  let detail = `${D > 0 ? us(D) + ' of ' : ''}${m.tracer || m.format}${on}: ${plural(s.n, 'call')} to ${plural(nfUsed, 'distinct function')} across ${plural(tasks.size, 'task')}`;
-  detail += t.events.n ? `, and ${plural(t.events.n, 'event')}.` : '.';
+  let detail = s.n
+    ? `${D > 0 ? us(D) + ' of ' : ''}${m.tracer || m.format}${on}: ${plural(s.n, 'call')} to ${plural(nfUsed, 'distinct function')} across ${plural(tasks.size, 'task')}` + (t.events.n ? `, and ${plural(t.events.n, 'event')}.` : '.')
+    : `${D > 0 ? us(D) + ' of ' : ''}tracepoint events${on}: ${plural(t.events.n, 'event')}, no function calls.`;
   if (m.clock === 'reconstructed' && s.n)
     detail += ` The file has no timestamps, so time is laid out from the printed durations${t.switches.n ? ' and time spent switched out cannot be measured (it stays inside `schedule()` as its own time)' : ''}; for real timestamps, \`echo funcgraph-abstime > trace_options\` before recording.`;
   out.push({ id: 'summary', kind: 'summary', level: 'info', title: 'What was traced', value: D > 0 ? us(D) : count(s.n) + ' calls', detail, range: [0, D] });
@@ -42,6 +43,8 @@ export function brief(t: Trace, a: Analysis): Insight[] {
     });
   }
   const housekeeping: Insight[] = [];
+  let thresh = false;
+  let flat = false;
   const q: string[] = [];
   const cut = m.counts.orphans + m.counts.unclosed;
   // a few calls open at either end is the normal shape of any trace: only say so when it is more than that
@@ -50,38 +53,45 @@ export function brief(t: Trace, a: Analysis): Insight[] {
     if (m.counts.unclosed) q.push(`${plural(m.counts.unclosed, 'call')} had not returned when it ends`);
   }
   if (m.counts.unparsed) q.push(`${plural(m.counts.unparsed, 'line')} could not be read`);
-  if (q.length)
+  if (q.length && !(m.format === 'function_graph' && m.counts.orphans >= 0.9 * s.n && !m.counts.unparsed))
     housekeeping.push({ id: 'cut', kind: 'quality', level: m.counts.unparsed ? 'warn' : 'note', title: m.counts.unparsed && !cut ? 'Unreadable lines' : 'Calls cut off at the ends', value: count(q.length === 1 && m.counts.unparsed ? m.counts.unparsed : cut), detail: q.join('; ') + (cut ? '. Calls without both ends are left out of the statistics.' : '.') });
   if (m.format === 'function' || (s.n > 0 && !m.options.duration && m.format !== 'function_graph'))
     out.push({ id: 'nodur', kind: 'quality', level: 'note', title: 'No durations', detail: 'The `function` tracer records only that a function was entered, not how long it ran, so nothing here can be called slow. Record with `echo function_graph > current_tracer` to get durations and nesting.' });
   else if (m.format === 'function_graph' && s.n > 0 && !m.options.duration)
     out.push({ id: 'nodur', kind: 'quality', level: 'note', title: 'No durations', detail: 'The durations column was turned off (`funcgraph-duration`), so calls show nesting but not time and nothing can be called slow. Leave `funcgraph-duration` on to get them.' });
   else if (m.format === 'function_graph' && s.n > 0) {
-    // tracing_thresh: only calls longer than a threshold are printed, as bare `}` lines with no children
-    let timed = 0, minD = Infinity, kids = 0;
+    // tracing_thresh prints only the returns of calls longer than the threshold: every call is an orphan.
+    // max_graph_depth=1 prints only the outermost calls: nothing has children.
+    let minD = Infinity, kids = 0, withDur = 0;
     for (let i = 0; i < s.n; i++) {
       if (s.firstChild[i] >= 0) kids++;
-      const d = s.dur[i];
-      if (isFinite(d) && !(s.flags[i] & UNTIMED_Q)) (timed++, (minD = Math.min(minD, d)));
+      if (isFinite(s.dur[i]) && s.dur[i] > 0) (withDur++, (minD = Math.min(minD, s.dur[i])));
     }
-    if (timed >= 20 && minD >= 5 && kids < 0.02 * s.n)
-      out.push({ id: 'thresh', kind: 'quality', level: 'note', title: 'Only slow calls recorded', value: '≥ ' + us(Math.floor(minD)), detail: `Every call in the file took at least ${us(Math.floor(minD))}: \`tracing_thresh\` was set, so faster calls and all nesting are missing. Medians and outliers here are among slow calls only.` });
+    if (m.counts.orphans >= 0.9 * s.n && withDur) {
+      thresh = true;
+      out.push({ id: 'thresh', kind: 'quality', level: 'note', title: 'Only slow calls recorded', value: `≥ ${us(minD)}`, detail: `\`tracing_thresh\` was set: the file holds only the returns of calls that took longer than it (the fastest here took ${us(minD)}), with no entries, no nesting and no faster calls. Nothing can be compared with a typical call, and the timeline is rebuilt from the returns alone.` });
+    } else if (kids === 0 && s.n >= 20) {
+      flat = true;
+      out.push({ id: 'depth', kind: 'quality', level: 'note', title: 'Only top-level calls', detail: 'No call has a traced callee (`max_graph_depth` was 1, or a filter kept only the entry points): every duration includes everything the call did below, and the trace cannot say where inside a call the time went.' });
+    }
   }
+
   if (s.n === 0 && t.events.n) {
     const byName = new Map<number, number>();
     for (let e = 0; e < t.events.n; e++) byName.set(t.events.name[e], (byName.get(t.events.name[e]) ?? 0) + 1);
     const top = [...byName].sort((x, y) => y[1] - x[1]);
-    let detail = `No function calls, only tracepoint events: ${top.slice(0, 6).map(([k, c]) => `${count(c)} \`${t.eventNames[k]}\``).join(', ')}${top.length > 6 ? `, and ${plural(top.length - 6, 'other kind')}` : ''}.`;
+    let detail = `${top.slice(0, 6).map(([k, c]) => `${count(c)} \`${t.eventNames[k]}\``).join(', ')}${top.length > 6 ? `, and ${plural(top.length - 6, 'other kind')}` : ''}.`;
     if (t.switches.n) {
       const per = new Map<number, number>();
-      for (let k = 0; k < t.switches.n; k++) if (t.switches.prev[k] > 0) per.set(t.switches.prev[k], (per.get(t.switches.prev[k]) ?? 0) + 1);
+      for (let k = 0; k < t.switches.n; k++) if (t.switches.prev[k] > 0 && t.tasks[t.switches.prev[k]]?.pid !== 0) per.set(t.switches.prev[k], (per.get(t.switches.prev[k]) ?? 0) + 1);
       const tops = [...per].sort((x, y) => y[1] - x[1]).slice(0, 4);
-      if (tops.length) detail += ` Switched out most often: ${tops.map(([task, c]) => `${t.tasks[task]?.comm ?? '?'}-${t.tasks[task]?.pid ?? task} ${count(c)}×`).join(', ')}.`;
+      if (tops.length) detail += ` Switched out most often (idle excluded): ${tops.map(([task, c]) => `${t.tasks[task]?.comm ?? '?'}-${t.tasks[task]?.pid ?? task} ${count(c)}×`).join(', ')}.`;
     }
     out.push({ id: 'events', kind: 'time', level: 'info', title: 'Events only', value: count(t.events.n), detail });
   }
 
   // ---- where the time went
+  const timeIns: Insight[] = [];
   let traced = 0;
   const entry = new Map<number, number>();
   for (const tr of t.tracks)
@@ -97,67 +107,88 @@ export function brief(t: Trace, a: Analysis): Insight[] {
     const topS = a.funcStats.filter((st) => st && st.self > 0).sort((x, y) => y.self - x.self).slice(0, 3);
     const parts: string[] = [];
     if (topE.length) parts.push(`Entry points: ${topE.map(([f, v]) => `${fn(t, f)} ${pct(v)}`).join(', ')}.`);
-    if (topS.length) parts.push(`Most self time: ${topS.map((st) => `${fn(t, st.func)} ${pct(st.self)}`).join(', ')}.`);
+    if (topS.length && !flat) parts.push(`Most self time: ${topS.map((st) => `${fn(t, st.func)} ${pct(st.self)}`).join(', ')}.`);
     if (parts.length)
-      out.push({ id: 'time', kind: 'time', level: 'info', title: 'Where the time went', value: topE.length ? pct(topE[0][1]) : undefined, detail: parts.join(' ') + (t.tracks.length > 1 ? ` Shares are of ${us(traced)} spent inside traced calls across all tasks.` : ''), target: topE.length ? { kind: 'func', id: topE[0][0] } : undefined });
+      timeIns.push({ id: 'time', kind: 'time', level: 'info', title: 'Where the time went', value: topE.length ? pct(topE[0][1]) : undefined, detail: parts.join(' ') + (t.tracks.length > 1 ? ` Shares are of ${us(traced)} spent inside traced calls across all tasks.` : ''), target: topE.length ? { kind: 'func', id: topE[0][0] } : undefined });
   }
 
-  // ---- outliers, grouped by function and cause
+  // ---- outliers, grouped: disk reads per function, interrupts across functions, the rest per function
   type O = Outlier & { _e?: Explanation };
-  const groups = new Map<string, { kind: 'disk' | 'irq' | 'other'; os: O[]; chain: string; func: number }>();
+  const groups = new Map<string, { kind: 'disk' | 'irq' | 'other'; os: O[]; func: number }>();
   for (const o of a.outliers as O[]) {
     const e = o._e;
     if (!e) continue;
     const top = e.contributors[0];
     const f = s.func[o.span];
-    let kind: 'disk' | 'irq' | 'other' = 'other';
-    let key = `${f}:`;
-    if (top?.kind === 'irq') {
-      kind = 'irq';
-      key = 'irq:' + irqKind(t, top.path[0]);
-    } else if (subtreeHas(t, o.span, DISK)) {
-      kind = 'disk';
-      key += 'disk';
-    }
+    const kind = top?.kind === 'irq' ? 'irq' : subtreeHas(t, o.span, DISK) ? 'disk' : 'other';
+    const key = kind === 'irq' ? 'irq' : `${f}:${kind}`;
     let g = groups.get(key);
-    if (!g) groups.set(key, (g = { kind, os: [], chain: '', func: f }));
+    if (!g) groups.set(key, (g = { kind, os: [], func: f }));
     g.os.push(o);
   }
   const findings: (Insight & { weight: number })[] = [];
+  const rangeOf = (os: O[]) => {
+    const durs = os.map((o) => s.dur[o.span]).sort((x, y) => x - y);
+    return span2(durs);
+  };
+  const restRange = (os: O[]) => {
+    const r = os.map((o) => s.dur[o.span] - a.irq[o.span]).sort((x, y) => x - y);
+    return span2(r);
+  };
+  const groupSel = (f: number, os: O[]) =>
+    os.length > 1 ? { kind: 'group' as const, func: f, spans: Int32Array.from(os.map((o) => o.span).sort((x, y) => x - y)) } : { kind: 'span' as const, id: os[0].span };
   for (const [key, g] of groups) {
-    const worst = g.os.reduce((x, y) => (y.excess > x.excess ? y : x));
-    const durs = g.os.map((o) => s.dur[o.span]).sort((x, y) => x - y);
-    const range = durs.length > 1 ? `${us(durs[0]).replace(/ \S+$/, '')}–${us(durs[durs.length - 1])}` : us(durs[0]);
     const sum = g.os.reduce((k, o) => k + o.excess, 0);
-    const where: [number, number] = [s.start[worst.span], s.start[worst.span] + s.dur[worst.span]];
-    const target = { kind: 'span' as const, id: worst.span };
     if (g.kind === 'irq') {
-      const funcs = new Set(g.os.map((o) => s.func[o.span]));
-      const maxIrq = Math.max(...g.os.map((o) => a.irq[o.span]));
-      const who = funcs.size === 1 ? `${fn(t, g.func)} calls` : 'calls';
+      // name the function most of them belong to; the rest are "other calls"
+      const byF = new Map<number, O[]>();
+      for (const o of g.os) byF.set(s.func[o.span], [...(byF.get(s.func[o.span]) ?? []), o]);
+      const [mf, mine] = [...byF].sort((x, y) => y[1].length - x[1].length)[0];
+      const others = g.os.filter((o) => s.func[o.span] !== mf);
+      const worst = mine.reduce((x, y) => (s.dur[y.span] > s.dur[x.span] ? y : x));
+      const irqF = new Map<number, number>();
+      for (const o of g.os) {
+        const c = o._e!.contributors.find((c) => c.kind === 'irq');
+        if (c) irqF.set(c.path[0], (irqF.get(c.path[0]) ?? 0) + 1);
+      }
+      const kinds = new Set([...irqF.keys()].map((f) => irqKind(t, f)));
+      const what = kinds.size === 1 ? `a ${[...kinds][0]} (${[...irqF.keys()].map((f) => fn(t, f)).join(', ')})` : 'an interrupt';
+      const typical = g.os.every((o) => /own work/.test(o.reason));
+      const st = a.funcStats[mf];
+      const othersTxt = others.length ? ` The same happened to ${others.length === 1 ? '1 other call' : `${count(others.length)} other calls`} (${[...new Set(others.map((o) => fn(t, s.func[o.span])))].slice(0, 3).join(', ')}).` : '';
       findings.push({
-        id: 'irq:' + key, kind: 'irq', level: 'note', weight: sum * 0.5, title: 'Inflated by interrupts', value: count(g.os.length), target, range: where,
-        detail: `${count(g.os.length)} ${who} ${g.os.length === 1 ? 'was' : 'were'} inflated by ${key.slice(4)}s landing inside ${g.os.length === 1 ? 'it' : 'them'}, up to ${us(maxIrq)}; without the interrupt they were typical.`,
+        id: 'irq', kind: 'irq', level: 'note', weight: sum, title: 'Inflated by interrupts', value: plural(mine.length, 'call'),
+        target: groupSel(mf, mine), range: [s.start[worst.span], s.start[worst.span] + s.dur[worst.span]],
+        detail: `${count(mine.length)} of ${count(st.timed)} ${fn(t, mf)} calls took ${rangeOf(mine)} ${typical ? 'only ' : ''}because ${what} fired inside ${mine.length === 1 ? 'it' : 'them'}; ${typical ? `${mine.length === 1 ? 'its' : 'their'} own work was typical` : `without the interrupt ${mine.length === 1 ? 'it' : 'they'} took ${restRange(mine)}, against a typical ${us(st.p50)}`}.${othersTxt}`,
       });
       continue;
     }
+    const worst = g.os.reduce((x, y) => (y.excess > x.excess ? y : x));
+    const where: [number, number] = [s.start[worst.span], s.start[worst.span] + s.dur[worst.span]];
     const st = a.funcStats[g.func];
     const e = worst._e!;
-    const head = `${count(g.os.length)} of ${count(st.timed)} ${fn(t, g.func)} calls took ${range} instead of ${us(st.p50)}`;
+    const head = `${count(g.os.length)} of ${count(st.timed)} ${fn(t, g.func)} calls took ${rangeOf(g.os)} instead of ${us(st.p50)}`;
     let why: string;
     if (g.kind === 'disk') {
-      const chain = e.blame.slice(1).map((b) => b.func);
-      const sleeper = e.contributors.find((c) => c.kind === 'off-cpu');
-      const extra = new Set<number>();
+      const newp = e.contributors.find((c) => c.kind === 'new-path') ?? e.contributors.find((c) => c.kind === 'off-cpu');
+      const path = newp ? newp.path.filter((x) => !/schedule$/.test(t.funcs.name[x])) : e.blame.slice(1).map((b) => b.func);
+      let sub = -1;
       walkNames(t, worst.span, (f) => {
-        if (/^(submit_bio|io_schedule)$/.test(t.funcs.name[f])) extra.add(f);
+        if (sub < 0 && /^submit_bio$/.test(t.funcs.name[f])) sub = f;
       });
-      for (const x of chain) extra.delete(x);
-      const names = chainText(t, chain.filter((x) => !/^(io_)?schedule$|^__schedule$/.test(t.funcs.name[x])));
-      const tail = [...extra].sort((x, y) => t.funcs.name[y].localeCompare(t.funcs.name[x])).map((x) => fn(t, x)).join(' → ');
-      why = `they went to disk — ${[names, tail].filter(Boolean).join(' → ')}${sleeper ? `, and slept in ${fn(t, sleepFunc(t, sleeper.path))}` : ''}.`;
+      const chain = [...path.slice(-2).map((x) => fn(t, x)), ...(sub >= 0 && !path.includes(sub) ? ['…', fn(t, sub)] : [])].join(' → ');
+      let sleeper = -1;
+      walkNames(t, worst.span, (f) => {
+        if (sleeper < 0 && /^io_schedule/.test(t.funcs.name[f])) sleeper = f;
+      });
+      const cache = path.some((x) => /^(filemap_|page_cache_|folio_)/.test(t.funcs.name[x]));
+      why = `${cache ? 'they missed the page cache and read from disk' : 'they waited for the disk'} — ${chain}${sleeper >= 0 ? `, then slept in ${fn(t, sleeper)} until the disk answered` : ''}.`;
+      if (g.os.length === 1) why = why.replace(/^they/, 'it');
     } else why = (g.os.length > 1 ? 'in the worst, ' : '') + worst.reason.charAt(0).toLowerCase() + worst.reason.slice(1);
-    findings.push({ id: 'out:' + key, kind: 'outlier', level: 'note', weight: sum, title: g.kind === 'disk' ? 'Slow: went to disk' : `Slow ${t.funcs.name[g.func]}`, value: `×${Math.round(worst.ratio)}`, detail: `${head}: ${why}`, target, range: where });
+    findings.push({
+      id: 'out:' + key, kind: 'outlier', level: 'note', weight: sum + (g.kind === 'disk' ? 1e12 : 0), title: g.kind === 'disk' ? 'Slow: went to disk' : `Slow ${t.funcs.name[g.func]}`,
+      value: `×${Math.round(worst.ratio)}`, detail: `${head.replace(/^1 of (\S+) (`[^`]+`) calls took/, '1 of $1 $2 calls took')}: ${why}`, target: groupSel(g.func, g.os), range: where,
+    });
   }
 
   // ---- off-CPU: where tasks waited longest, outside the outliers already told
@@ -165,7 +196,10 @@ export function brief(t: Trace, a: Analysis): Insight[] {
   for (let i = 0; i < s.n; i++) {
     let kids = 0;
     for (let c = s.firstChild[i]; c >= 0; c = s.nextSibling[c]) kids += a.off[c];
-    if (a.off[i] - kids > 0.5 * a.off[i] && a.off[i] >= Math.max(50, 0.01 * D)) waits.push(i);
+    if (!(a.off[i] - kids > 0.5 * a.off[i] && a.off[i] >= Math.max(50, 0.01 * D))) continue;
+    let told = false;
+    for (let p = i; p >= 0 && !told; p = s.parent[p]) told = a.outlier[p] === 1;
+    if (!told) waits.push(i);
   }
   waits.sort((x, y) => a.off[y] - a.off[x]);
   if (waits.length) {
@@ -204,7 +238,8 @@ export function brief(t: Trace, a: Analysis): Insight[] {
     const sys = /^__(x64|ia32|arm64)_sys_|^ksys_/.test(name);
     // retval is printed for void functions too, where it is register noise: a known errno name and a minority of calls only
     const [c, k] = [...cm].sort((x, y) => y[1] - x[1])[0];
-    if (!ERRNO[-c] || c <= -512) continue;
+    // -1 from a non-syscall is as often a boolean or register noise as -EPERM
+    if (!ERRNO[-c] || c <= -512 || (!sys && c === -1)) continue;
     if (sys || (ec[f] * 2 < rc[f] && rc[f] >= 4 && ec[f] < 0.3 * rc[f])) errs.push({ f, n: k, of: rc[f], code: c, span: first[f] });
   }
   errs.sort((x, y) => Number(/sys_/.test(t.funcs.name[y.f])) - Number(/sys_/.test(t.funcs.name[x.f])) || y.n - x.n);
@@ -217,9 +252,20 @@ export function brief(t: Trace, a: Analysis): Insight[] {
     });
   }
 
-  findings.sort((x, y) => (y.kind === 'outlier' ? 1 : 0) - (x.kind === 'outlier' ? 1 : 0) || y.weight - x.weight);
-  for (const { weight: _w, ...f } of findings) out.push(f);
-  return out.slice(0, MAX);
+  // outlier groups and the interrupt insight by total excess (disk first), then off-CPU, then errors
+  const rank = (x: { kind: string }) => (x.kind === 'outlier' || x.kind === 'irq' ? 0 : x.kind === 'offcpu' ? 1 : 2);
+  findings.sort((x, y) => rank(x) - rank(y) || y.weight - x.weight);
+  const body: Insight[] = findings.map(({ weight: _w, ...f }) => f);
+  const room = MAX - out.length - timeIns.length - housekeeping.length;
+  return [...out, ...body.slice(0, Math.max(3, room)), ...timeIns, ...housekeeping];
+}
+
+/** `48.5–111 µs`, or `184 µs–2.21 ms` when the ends need different units. */
+function span2(sorted: number[]): string {
+  const [a, b] = [us(sorted[0]), us(sorted[sorted.length - 1])];
+  if (sorted.length < 2 || a === b) return b;
+  const ua = a.split(' ')[1];
+  return ua === b.split(' ')[1] ? `${a.split(' ')[0]}–${b}` : `${a}–${b}`;
 }
 
 function walkNames(t: Trace, root: number, cb: (f: number) => void): void {
