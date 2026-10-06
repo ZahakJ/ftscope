@@ -390,7 +390,7 @@ It tells you what was called, and only with the newer options a little of what t
 
 And it changes what it measures. The untraced reads in the mystery took 0.68 µs; the traced ones took 8. The nine interrupt-inflated reads are partly ftrace's own doing: a timer interrupt is cheap, until every function it calls is being timed.
 
-Each of those limits is the reason some other tool exists: one that samples instead of hooking, one that plants a breakpoint at any instruction, one that runs a small program of yours at the hook. They are the rest of this series.
+Each of those limits is the reason some other tool exists: one that samples instead of hooking, one that plants a breakpoint at any instruction, one that runs a small program of yours at the hook. They are the rest of [this series](https://astrolabe.avicenna.space/Zombies/Tracing%20from%20first%20principles).
 
 ## Running it yourself
 
