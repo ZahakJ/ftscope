@@ -112,6 +112,12 @@
 .insp-raw-row.is-mark { color: var(--text); background: var(--surface-2); box-shadow: inset 2px 0 0 var(--accent); }
 .insp-raw-row:not(.is-mark) { color: var(--text-2); }
 .insp-raw-n { flex: none; width: 52px; padding-right: 10px; text-align: right; color: var(--text-3); user-select: none; }
+.insp-raw-d { flex: none; width: 10ch; padding-right: 1ch; text-align: right; color: var(--text-2); user-select: none; }
 .insp-raw-gap { padding-left: 62px; color: var(--text-3); font-style: italic; }
 .insp-raw-c { color: var(--text-3); }
 .insp-mini.is-on { color: var(--accent); }
+.insp-cmp-wrap { position: relative; margin-top: 6px; }
+.insp-cmp-cv { display: block; width: 100%; }
+.insp-cmp-tip { position: absolute; pointer-events: none; display: none; z-index: 2; padding: 4px 7px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-2); color: var(--text); font: var(--fs-small) / 1.4 var(--font-ui); white-space: nowrap; }
+.insp-cmp-tip-name { font: var(--fs-mono) var(--font-mono); }
+.insp-cmp-tip-sub { color: var(--text-2); font: var(--fs-mono) var(--font-mono); }

@@ -231,6 +231,7 @@ function verdictText(
   const own = v.excess - Math.max(0, irqT - (v.contrib.find((c) => c.kind === 'irq')?.typical ?? 0));
   const irqNote = irqT >= 0.05 * dur ? ` (${us(irqT)} of it was ${v.irqBig >= 0 ? 'a ' + irqKind(t, s.func[v.irqBig]) : 'interrupts'})` : '';
   const selfC = v.contrib.find((c) => c.kind === 'self');
+  if (selfC && s.firstChild[span] < 0 && ![...v.peers.keys()].some((k) => k)) return `${head} Nothing below it was traced, so the trace cannot say where inside it the time went.`;
   if (selfC && selfC.excess >= 0.5 * own) {
     const name = fn(t, s.func[span]);
     // the same callees called many more times than usual: the call did more work, not slower work
@@ -240,7 +241,7 @@ function verdictText(
       ? `; its callees ran ${count(loops[0].calls)} times instead of ~${loops[0].typicalCalls.toFixed(loops[0].typicalCalls < 10 ? 1 : 0)} (${loops.slice(0, 2).map((c) => fn(t, c.path[c.path.length - 1])).join(', ')}${loops.length > 2 ? ', …' : ''}), adding ${us(lx)}`
       : '';
     const irqPart = irqT >= 0.05 * dur ? `; ${us(irqT)} was ${v.irqBig >= 0 ? 'a ' + irqKind(t, s.func[v.irqBig]) : 'interrupts'}` : '';
-    if (!more && !irqPart) return `${head} The time was in ${name} itself (${us(selfC.time)} against a typical ${us(selfC.typical)}), not in anything it called.`;
+    if (!more && !irqPart) return `${head} The time was in ${name} itself (${us(selfC.time)} against a typical ${us(selfC.typical)}), not in anything it called${stall(t, selfC.time, selfC.typical)}.`;
     return `${head} ${us(selfC.time)} was in ${name} itself (typically ${us(selfC.typical)})${more}${irqPart}.`;
   }
   const big = v.contrib.filter((c) => c.kind !== 'irq');
@@ -285,9 +286,16 @@ function verdictText(
   }
   if (top.kind === 'slower') {
     const g = top.path[top.path.length - 1];
-    return `${head} ${us(top.excess)} of it was ${fn(t, g)} itself running longer (${us(top.time)} instead of ${us(top.typical)}), via ${chainText(t, top.path)}.`;
+    const via = top.path.length > 1 ? `, via ${chainText(t, top.path)}` : '';
+    return `${head} ${us(top.excess)} of it was ${fn(t, g)} itself running longer (${us(top.time)} instead of ${us(top.typical)})${via}${stall(t, top.time, top.typical)}.`;
   }
   return `${head} The time was in ${fn(t, s.func[span])} itself, not in anything it called${irqNote}.`;
+}
+
+/** A trivial function "running" for a millisecond was almost certainly not running; say so when the trace cannot show it. */
+function stall(t: Trace, time: number, typical: number): string {
+  if (t.meta.clock !== 'reconstructed' || time < 500 || time < 100 * typical) return '';
+  return '; that long in so short a function usually means the task was preempted or the CPU stalled, which a trace without timestamps cannot show';
 }
 
 export function explain(t: Trace, a: Analysis, span: number): Explanation {

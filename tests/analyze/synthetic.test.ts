@@ -84,9 +84,9 @@ describe('analyze on a hand-built mystery', () => {
     const irq = a.insights.filter((i) => i.kind === 'irq');
     expect(a.insights[0].kind).toBe('summary');
     expect(out).toHaveLength(1);
-    expect(out[0].detail).toMatch(/^3 of 200 `__x64_sys_read` calls took .* went to disk .*`submit_bio`.*slept in `io_schedule`/);
+    expect(out[0].detail).toMatch(/^3 of 200 `__x64_sys_read` calls took .* read from disk .*`submit_bio`.*slept in `io_schedule`/);
     expect(irq).toHaveLength(1);
-    expect(irq[0].detail).toMatch(/^4 `__x64_sys_read` calls were inflated by timer interrupts/);
+    expect(irq[0].detail).toMatch(/^4 of 200 `__x64_sys_read` calls took .*because a timer interrupt/);
   });
 
   it('explains typical and slow calls', () => {
@@ -97,7 +97,7 @@ describe('analyze on a hand-built mystery', () => {
     expect(e.blame.map((b) => t.funcs.name[t.spans.func[b.span]])).toContain('filemap_add_folio');
     const i = explain(t, a, reads[50]);
     expect(i.contributors[0].kind).toBe('irq');
-    expect(i.verdict).toMatch(/timer interrupt .* the call itself was typical/);
+    expect(i.verdict).toMatch(/timer interrupt .* own work .* was typical/);
   });
 
   it('folds the reads into one loop despite interrupts', () => {

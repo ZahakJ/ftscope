@@ -365,3 +365,31 @@ export function taskWord(t: Trace, task: number): string {
   const k = t.tasks[task];
   return !k ? '?' : k.pid === 0 ? 'idle' : k.comm;
 }
+
+/**
+ * A function_graph line split into its duration cell and its call text, for the compact raw view:
+ * `+ 20.4 µs` (or '' on an opening line) and the text after the bar with the file's indentation kept.
+ * null for anything that is not a graph line (banners, comments, function-tracer lines).
+ */
+export function graphCells(line: string): { dur: string; body: string } | null {
+  if (isNoise(line)) return null;
+  let prev = -1;
+  let bar = -1;
+  let seg = '';
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] !== '|') continue;
+    const s = line.slice(prev + 1, i);
+    if (/^[\s\d.+!#*@$)]*(us|ms|s)?\s*$/.test(s) && line[i + 1] === ' ') {
+      bar = i;
+      seg = s;
+    }
+    prev = i;
+    if (/\/\*/.test(line.slice(0, i))) break;
+  }
+  if (bar < 0) return null;
+  // The segment may start with the CPU column (`0)`); the duration is what ends it.
+  const m = /(?:([+!#*@$])\s*)?(\d+(?:\.\d+)?)\s*(us|ms|s)\s*$/.exec(seg);
+  const unit = m ? ({ us: 'µs', ms: 'ms', s: 's' } as Record<string, string>)[m[3]] : '';
+  const dur = m ? `${m[1] ? m[1] + ' ' : ''}${m[2]} ${unit}` : '';
+  return { dur, body: line.slice(bar + 2).replace(/\s+$/, '') };
+}

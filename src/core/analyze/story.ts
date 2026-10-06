@@ -56,8 +56,10 @@ export function storyChildren(t: Trace, a: Analysis, parent: number, track?: num
         const skip: number[] = [];
         for (;;) {
           if (unitAt(q, L)) [reps, q] = [reps + 1, q + L];
-          else if (reps >= MIN_RUN && unitAt(q + 1, L)) [skip[skip.length], reps, q] = [q, reps + 1, q + 1 + L];
-          else if (reps >= MIN_RUN && unitAt(q + 2, L)) {
+          // a stray sibling or two after the first repetition too: the loop's first
+          // iteration often stands apart (a page fault between it and the rest)
+          else if (unitAt(q + 1, L)) [skip[skip.length], reps, q] = [q, reps + 1, q + 1 + L];
+          else if (unitAt(q + 2, L)) {
             skip.push(q, q + 1);
             [reps, q] = [reps + 1, q + 2 + L];
           } else break;

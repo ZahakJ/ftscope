@@ -15,7 +15,9 @@ function sig3(x: number): string {
 export function fmtDur(us: number): string {
   if (!Number.isFinite(us)) return '—';
   const a = Math.abs(us);
-  if (a === 0) return '0 ns';
+  if (a === 0) return '0';
+  // Below the clock's resolution a decimal would claim precision the trace never had.
+  if (a < 1e-3 && Number(sig3(a / 1e-3)) < 1) return us < 0 ? '>−1 ns' : '<1 ns';
   // Round first so 999.6 ns becomes `1.00 µs`, not `1000 ns`.
   const units: [number, string][] = [
     [1e-3, 'ns'],

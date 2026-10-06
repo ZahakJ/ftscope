@@ -6,9 +6,9 @@ import { effect } from '@preact/signals';
 import { F, type Trace } from '../../core/model';
 import type { Analysis } from '../../core/api';
 import {
-  analysis, colorMode, hover, matches, selectSpan, selection, spanEnd, trace, view, zoomAll, zoomTo,
+  analysis, colorMode, hover, matches, select, selectSpan, selection, spanEnd, trace, view, zoomAll, zoomTo,
 } from '../state';
-import { fmtCount, fmtDur } from '../format';
+import { fmtCount, fmtDur, fmtTime } from '../format';
 import { immediate, setViewNow, shownView } from './shown';
 import { mix, onSchemeChange, readPalette, type Palette } from './colors';
 import {
@@ -283,7 +283,14 @@ export function mountTimeline(el: HTMLElement): () => void {
               const name = t.funcs.name[sp.func[id]];
               const dur = Number.isNaN(sp.dur[id]) ? '' : fmtDur(sp.dur[id]);
               const vis0 = Math.max(xa, 0) + 4;
-              const room = Math.min(xa + fw, W) - vis0 - 4;
+              // Labels live on the solid part: stop at the first off-CPU stretch inside the box.
+              let solid = Math.min(xa + fw, W);
+              const lo2 = lane.off;
+              const bs = sp.start[id];
+              let oj = lowerBound(lo2, bs) & ~1;
+              if (oj < lo2.length && lo2[oj + 1] <= bs) oj += 2;
+              if (oj < lo2.length && lo2[oj] < bs + (Number.isNaN(sp.dur[id]) ? 0 : sp.dur[id])) solid = Math.min(solid, Math.round((lo2[oj] - t0) * k));
+              const room = solid - vis0 - 4;
               ctx.font = monoFont;
               // Light text on the two brightest heat steps would vanish; they take the background colour.
               const ink = inkOf(t, a, id);
@@ -333,10 +340,9 @@ export function mountTimeline(el: HTMLElement): () => void {
         }
         if (!open) continue;
         const ry = y0 + HEADER;
-        ctx.globalAlpha = 0.9;
+        // Opaque: labels drawn on the boxes beneath must not show through as stray characters.
         ctx.fillStyle = pal.surface1;
         ctx.fillRect(xa, ry, xb - xa, open * R - 1);
-        ctx.globalAlpha = 1;
         ctx.fillStyle = hatch(pal.lineStrong);
         ctx.fillRect(xa, ry, xb - xa, open * R - 1);
         if (xb - xa > 60) {
@@ -587,6 +593,52 @@ export function mountTimeline(el: HTMLElement): () => void {
     return best >= 0 ? t.gaps[best] : null;
   }
 
+  /** Event marks under the pointer: the same geometry the draw pass uses. Several ids = a coalesced mark. */
+  function eventsAt(x: number, y: number): number[] {
+    const t = trace.value;
+    if (!t || !idx || !t.events.n || y < AXIS) return [];
+    const cy = y - AXIS + scrollY;
+    const b = boxes.find((q) => cy >= q.top && cy < q.top + q.height - LANE_GAP);
+    if (!b) return [];
+    const lane = idx.lanes[b.lane];
+    const rows = Math.min(b.rows, lane.rows.length);
+    if (rows <= 0) return [];
+    const ev = lane.events;
+    const ets = t.events.ts;
+    const t0 = shown.t0;
+    const t1 = shown.t1;
+    const k = W / (t1 - t0);
+    const lb = (v: number, from = 0) => {
+      let a = from;
+      let z = ev.length;
+      while (a < z) {
+        const m = (a + z) >>> 1;
+        if (ets[ev[m]] < v) a = m + 1;
+        else z = m;
+      }
+      return a;
+    };
+    const lo = lb(t0 - 6 / k);
+    const inView = Math.max(0, lb(t1 + 1e-9) - lb(t0));
+    const dense = inView > W / 12;
+    const R = pal.row;
+    const out: number[] = [];
+    for (let i = lo; i < ev.length; i++) {
+      const ex = (ets[ev[i]] - t0) * k;
+      if (ex > x + 5) break;
+      if (Math.abs(ex - x) > 4.5) continue;
+      if (dense) {
+        if (cy - b.top <= 6) out.push(ev[i]);
+        continue;
+      }
+      const s = t.events.span[ev[i]];
+      const d = Math.min(s >= 0 ? t.spans.depth[s] + 1 : 0, rows - 1);
+      const ey = b.top + HEADER + d * R + R - 1;
+      if (cy >= ey - 8 && cy <= ey + 1) out.push(ev[i]);
+    }
+    return out;
+  }
+
   let drag: { x: number; y: number; moved: boolean; t0: number; t1: number; sy: number } | null = null;
   const pos = (e: MouseEvent) => {
     const r = canvas.getBoundingClientRect();
@@ -646,6 +698,20 @@ export function mountTimeline(el: HTMLElement): () => void {
       placeTip(p.x, p.y);
       return;
     }
+    const evs = eventsAt(p.x, p.y);
+    if (evs.length) {
+      const t = trace.value!;
+      const e0 = evs[0];
+      const span = shown.t1 - shown.t0;
+      canvas.style.cursor = evs.length > 1 ? 'zoom-in' : 'pointer';
+      tip.innerHTML = evs.length > 1
+        ? `<div><span style="font:var(--fs-mono) var(--font-mono)">${fmtCount(evs.length)} events</span></div>` +
+          `<div style="color:var(--text-3)">${[...new Set(evs.map((e) => t.eventNames[t.events.name[e]]))].slice(0, 4).join(', ')} · click to zoom in</div>`
+        : `<div><span style="font:var(--fs-mono) var(--font-mono)">${t.eventNames[t.events.name[e0]]}</span></div>` +
+          `<div style="color:var(--text-2)"><span style="font:var(--fs-mono) var(--font-mono)">${fmtTime(t.events.ts[e0], span)}</span> · event</div>`;
+      placeTip(p.x, p.y);
+      return;
+    }
     canvas.style.cursor = h.kind === 'header' ? 'pointer' : h.kind === 'run' ? 'zoom-in' : 'default';
     showTip(h, p.x, p.y);
   };
@@ -655,6 +721,19 @@ export function mountTimeline(el: HTMLElement): () => void {
     canvas.style.cursor = 'default';
     if (!d || d.moved) return;
     const p = pos(e);
+    const evs = eventsAt(p.x, p.y);
+    if (evs.length === 1) {
+      select({ kind: 'event', id: evs[0] });
+      return;
+    }
+    if (evs.length > 1) {
+      const t = trace.value!;
+      const a0 = t.events.ts[evs[0]];
+      const a1 = t.events.ts[evs[evs.length - 1]];
+      const w = Math.max(a1 - a0, (shown.t1 - shown.t0) / 50, 0.05);
+      zoomTo(a0 - w * 0.5, a1 + w * 0.5);
+      return;
+    }
     const h = hitAt(p.x, p.y);
     if (h.kind === 'span') selectSpan(h.id, { reveal: false });
     else if (h.kind === 'run') {

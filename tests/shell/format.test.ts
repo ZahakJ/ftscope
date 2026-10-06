@@ -15,7 +15,9 @@ describe('fmtDur', () => {
     expect(fmtDur(999.7)).toBe('1.00 ms');
   });
   it('handles zero and missing values', () => {
-    expect(fmtDur(0)).toBe('0 ns');
+    expect(fmtDur(0)).toBe('0');
+    expect(fmtDur(0.00088)).toBe('<1 ns');
+    expect(fmtDur(0.0012)).toBe('1.20 ns');
     expect(fmtDur(NaN)).toBe('—');
   });
   it('keeps very long durations in seconds', () => {
