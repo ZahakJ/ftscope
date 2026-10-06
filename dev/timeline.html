@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ftscope timeline harness</title>
+<link rel="stylesheet" href="/src/ui/tokens.css" />
+<style>
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: var(--fs-ui) var(--font-ui); }
+  body { display: grid; grid-template-rows: 28px 56px 1fr; }
+  #bar { display: flex; gap: 12px; align-items: center; padding: 0 10px; border-bottom: 1px solid var(--line); color: var(--text-2); }
+  #ov { border-bottom: 1px solid var(--line); }
+  #tl { min-height: 0; }
+</style>
+</head>
+<body>
+<div id="bar"><b style="color:var(--text)">timeline harness</b><span id="info"></span></div>
+<div id="ov"></div>
+<div id="tl"></div>
+<script type="module" src="./timeline.ts"></script>
+</body>
+</html>

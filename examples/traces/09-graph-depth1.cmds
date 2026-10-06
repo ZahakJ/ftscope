@@ -1,0 +1,5 @@
+echo 'function_graph' > current_tracer
+echo '1' > max_graph_depth
+# workload (pid-filtered): ls -l /bin
+sh -c 'echo $$ > set_ftrace_pid; echo $$ > set_event_pid; echo 1 > tracing_on; exec ls -l /bin'
+echo 0 > tracing_on

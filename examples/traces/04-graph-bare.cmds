@@ -1,0 +1,7 @@
+echo 'function_graph' > current_tracer
+echo 'nofuncgraph-cpu' > trace_options
+echo 'nofuncgraph-overhead' > trace_options
+echo 'nofuncgraph-duration' > trace_options
+# workload (pid-filtered): cat /proc/version
+sh -c 'echo $$ > set_ftrace_pid; echo $$ > set_event_pid; echo 1 > tracing_on; exec cat /proc/version'
+echo 0 > tracing_on

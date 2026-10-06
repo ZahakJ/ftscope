@@ -1,0 +1,6 @@
+echo '4096' > buffer_size_kb
+echo 'function_graph' > current_tracer
+echo 'function-fork' > trace_options
+# workload (pid-filtered): multitask
+sh -c 'echo $$ > set_ftrace_pid; echo $$ > set_event_pid; echo 1 > tracing_on; exec multitask'
+echo 0 > tracing_on

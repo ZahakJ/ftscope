@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-single/
+lab/out/
+lab/out-*/
+lab/build/
+*.log
+.DS_Store
+shots/
+RESUME.md

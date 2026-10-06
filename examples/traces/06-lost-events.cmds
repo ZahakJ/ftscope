@@ -1,0 +1,6 @@
+echo '8' > buffer_size_kb
+echo 'function' > current_tracer
+# reader: cat trace_pipe > 06-lost-events.trace (concurrent with workload)
+echo '1' > tracing_on
+# workload (unfiltered): multitask
+echo '0' > tracing_on

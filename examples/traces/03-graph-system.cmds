@@ -1,0 +1,5 @@
+echo '4096' > buffer_size_kb
+echo 'function_graph' > current_tracer
+echo '1' > tracing_on
+# workload (unfiltered): usleep 80000
+echo '0' > tracing_on

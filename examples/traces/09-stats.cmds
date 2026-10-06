@@ -1,0 +1,4 @@
+echo 'function' > current_tracer
+echo '1' > tracing_on
+# workload (unfiltered): cat /proc/version
+echo '0' > tracing_on
