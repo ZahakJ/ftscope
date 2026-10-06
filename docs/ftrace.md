@@ -2,11 +2,11 @@
 
 *Also published at <https://astrolabe.avicenna.space/Zombies/ftrace>. Everything quoted below was produced by [`lab/`](../lab) and is in [`examples/traces/`](../examples/traces).*
 
-The kernel running on the machine I used for this note is made of 55,412 functions that can be traced. Some of them are running right now, thousands of times every millisecond, and you cannot see any of it. Suppose a `read()` that normally takes eight microseconds sometimes takes two hundred. In which of those fifty-five thousand functions did the time go?
+The Linux 7.1 kernel that Arch ships is made of 55,412 functions that can be traced. Some of them are running right now, thousands of times every millisecond, and you cannot see any of it. Suppose a `read()` that normally takes eight microseconds sometimes takes two hundred. In which of those fifty-five thousand functions did the time go?
 
 You cannot casually stop a live kernel in a debugger: it is the thing running your debugger, your disk and your network. You can add a `printk` to the functions you suspect, rebuild, reboot, and learn that you suspected the wrong ones. What you actually want sounds impossible: a record of every function the kernel called, in order, with how long each one took, on a live system, switched on and off whenever you like, and costing nothing while it is off.
 
-Linux has had exactly this since 2008. It is called **ftrace**, and it is compiled into nearly every distribution's kernel. This note builds it from nothing, because built from nothing it stops being a tool with eighty options and turns into four tricks, each one the fix for what was wrong with the step before. Every piece of output below is real, captured from Linux 7.1.8 running in a throwaway virtual machine, and the last section tells you how to run all of it yourself with one command.
+Linux has had exactly this since 2008. It is called **ftrace**, and it is compiled into nearly every distribution's kernel. This note builds it from nothing, because built from nothing it stops being a tool with eighty options and turns into four tricks, each one the fix for what was wrong with the step before. Nothing below is made up for illustration. Every hexdump, trace and number was captured from a real kernel, and the last section shows how to reproduce all of it with one command.
 
 ## The dumbest thing that could work
 
@@ -53,7 +53,7 @@ The fix: don't call anything until someone asks. A `call` is five bytes. There i
 
 To trace a function, the kernel writes the call back.
 
-I did not want to take that on faith, so I looked. `/proc/kcore` lets root read the kernel's own memory as if it were a file. Here are the first sixteen bytes of `vfs_read` in the running kernel, with tracing off:
+That is a strong claim, so don't take it on faith. Look. `/proc/kcore` lets root read the kernel's own memory as if it were a file. Here are the first sixteen bytes of `vfs_read` in a running kernel, with tracing off:
 
 ```
 vfs_read  ffffffffad7b7500:  0f 1f 40 d6  0f 1f 44 00 00  48 81 ec 90 00 00 00
@@ -291,9 +291,9 @@ A small program calls `getppid()`, about the cheapest system call there is, two 
 
 Look at rows three and five.
 
-Row three: the function tracer is on, but filtered to `tcp_sendmsg`, which `getppid` never goes near. The cost is nothing I can measure: 317 against 319, and the five runs of each overlap. That is trick two, confirmed with a stopwatch. The filter decides which call sites get patched; every function on our path still begins with a no-op, so our path consists of exactly the instructions it had with tracing off. (Row two is the same story for a tracepoint we never pass through. It came out slightly *under* "off" on every run, which says something about measuring inside a virtual machine and nothing about tracing.)
+Row three: the function tracer is on, but filtered to `tcp_sendmsg`, which `getppid` never goes near. The cost cannot be measured: 317 against 319, and the five runs of each overlap. That is trick two, confirmed with a stopwatch. The filter decides which call sites get patched; every function on our path still begins with a no-op, so our path consists of exactly the instructions it had with tracing off. (Row two is the same story for a tracepoint we never pass through. It came out slightly *under* "off" on every run, which says something about measuring inside a virtual machine and nothing about tracing.)
 
-Row five looks like the same idea and is not free at all. `set_graph_function=tcp_sendmsg` says "record only what happens below `tcp_sendmsg`", and nothing on our path is recorded, yet every call got twice as slow. The reason is that this is a different kind of filter. It does not choose which sites are patched. Every site is patched, every function calls the hook, and the *hook* looks at the filter and declines. I checked with the byte dump: with `set_graph_function=vfs_read`, all three functions I was watching carried a `call`, not just `vfs_read`.
+Row five looks like the same idea and is not free at all. `set_graph_function=tcp_sendmsg` says "record only what happens below `tcp_sendmsg`", and nothing on our path is recorded, yet every call got twice as slow. The reason is that this is a different kind of filter. It does not choose which sites are patched. Every site is patched, every function calls the hook, and the *hook* looks at the filter and declines. The byte dump from earlier settles it: with `set_graph_function=vfs_read`, all three functions in the dump carry a `call`, not just `vfs_read`.
 
 The practical rule falls out of that. To make tracing cheap, shrink the set of patched functions (`set_ftrace_filter`, which the graph tracer obeys as well). A filter that is evaluated at run time has already been paid for by the time it says no.
 
@@ -335,7 +335,7 @@ And a handful of options put more on each line instead: `funcgraph-proc` (which 
 
 ## The wall of text
 
-Here is a small mystery, the kind ftrace is for, and I should say at once that I planted the answer. A program reads a disk a thousand times, four kilobytes at a time. Normally the kernel does not go to the disk for that: it keeps recently used disk blocks in memory, in the *page cache*, and a read is a copy out of it. Before the run I loaded all thousand blocks into the page cache and then threw three of them out. The question is whether the trace lets you find those three, and say what happened to them.
+Let's set a small trap, the kind of problem ftrace is for. A program reads a disk a thousand times, four kilobytes at a time. Normally the kernel does not go to the disk for that: it keeps recently used disk blocks in memory, in the *page cache*, and a read is a copy out of it. Before the run, all thousand blocks are loaded into the page cache, and then three of them are quietly thrown out. So we know the answer in advance: three reads will have to go to the disk. The question is whether the trace lets you find those three, and see what happened to them.
 
 The function_graph trace of the thousand reads is 51,864 lines. Start the obvious way: pull out the closing line of every read and sort by duration.
 
@@ -352,7 +352,7 @@ If you do, you find that the twelve are two different stories. Three reads misse
 
 This is the general shape of the problem. ftrace records everything and summarises nothing. The number on a closing brace cannot tell you whether the function worked, slept, or was merely standing there when an interrupt arrived. The trace knows; it takes three hundred lines to say so.
 
-So I wrote down what I had just done by hand, as a program. It is called **[ftscope](https://zahakj.github.io/ftscope/)**, and it does three things.
+Everything we just did by hand is mechanical, so it can be a program. That program is **[ftscope](https://zahakj.github.io/ftscope/)**, a viewer written for this series, and it does three things.
 
 **It folds what repeats.** The thousand reads are, structurally, one read printed a thousand times. They become one row, with the typical duration and the worst one beside it. Open the row and the typical call is there once, with the calls that are *not* typical pinned above it.
 
@@ -368,13 +368,13 @@ So I wrote down what I had just done by hand, as a program. It is called **[ftsc
 
 *The 111 µs read on a timeline. The violet calls nested inside it are the timer interrupt. [Open this view](https://zahakj.github.io/ftscope/?trace=demo/mystery.trace.gz#sel=23940).*
 
-For this trace, before I click anything, it says (the left side of the picture above):
+Open this trace and, before you click anything, it says (the left side of the picture above):
 
 > **Slow: went to disk.** 3 of 1 000 `__x64_sys_read` calls took 87.6–194 µs instead of 7.86 µs: they missed the page cache and read from disk — `filemap_get_pages` → `page_cache_sync_ra` → … → `submit_bio`, then slept in `io_schedule` until the disk answered.
 >
 > **Inflated by interrupts.** 9 of 1 000 `__x64_sys_read` calls took 48.5–111 µs because a timer interrupt (`__sysvec_apic_timer_interrupt`) fired inside them; without the interrupt they took 11.7–17.4 µs, against a typical 7.86 µs.
 
-Which is the answer, including the part I had to read three hundred lines at a time to learn: that nine of the twelve were slow only because something landed on them. Each finding links to the lines of the trace that prove it.
+That is the answer, including the part that took three hundred lines at a time to dig out by hand: nine of the twelve were slow only because something landed on them. Each finding links to the lines of the trace that prove it.
 
 You can open [this same trace](https://zahakj.github.io/ftscope/?trace=demo/mystery.trace.gz) and poke at it, or drop one of your own on the page; it is read by your browser and goes nowhere. The code is at [github.com/ZahakJ/ftscope](https://github.com/ZahakJ/ftscope).
 
@@ -388,13 +388,13 @@ It cannot see inside a function. Hooks sit at entries (and, by theft, at exits).
 
 It tells you what was called, and only with the newer options a little of what the values were. To ask "what was in this structure when we got here", you need a hook you can program.
 
-And it changes what it measures. The untraced reads in the mystery took 0.68 µs; the traced ones took 8. The nine interrupt-inflated reads are partly ftrace's own doing: a timer interrupt is cheap, until every function it calls is being timed.
+And it changes what it measures. Run the same thousand reads with tracing off and each takes 0.68 µs; traced, they took 8. The nine interrupt-inflated reads are partly ftrace's own doing: a timer interrupt is cheap, until every function it calls is being timed.
 
 Each of those limits is the reason some other tool exists: one that samples instead of hooking, one that plants a breakpoint at any instruction, one that runs a small program of yours at the hook. They are the rest of [this series](https://astrolabe.avicenna.space/Zombies/Tracing%20from%20first%20principles).
 
 ## Running it yourself
 
-I do not have root on the machine I write on, and none of this works without root. So everything above was produced inside a virtual machine that exists for about ninety seconds: the same kernel image my distribution installed in `/boot`, started under QEMU, with a root filesystem of a few hundred kilobytes whose only job is to run these experiments, write the results to a scratch disk, and power off. Nothing on the host is traced or touched.
+All of this needs root, and the kernel you are working on is a poor place to experiment: you cannot repeat anything exactly, and a mistake is your own machine's problem. So the experiments run somewhere disposable, a virtual machine that exists for about ninety seconds. It boots the same kernel image your distribution installed in `/boot`, under QEMU, with a root filesystem of a few hundred kilobytes whose only job is to run the experiments, write the results to a scratch disk, and power off. Nothing on the host is traced or touched, and you do not need root on the host at all.
 
 ```
 git clone https://github.com/ZahakJ/ftscope
