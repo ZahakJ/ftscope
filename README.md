@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/media/banner.png" alt="ftscope — a viewer for Linux ftrace output that reads the trace for you" width="820"></p>
+
 # ftscope
 
 **A viewer for Linux ftrace output that reads the trace for you.** Drop a
