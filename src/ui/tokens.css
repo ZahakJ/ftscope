@@ -1,4 +1,4 @@
-/* Design tokens. Neutral greys with one gold accent; no tint on surfaces or text.
+/* Design tokens.
    Canvas code reads these with getComputedStyle(document.documentElement). */
 
 :root {

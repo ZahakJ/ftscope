@@ -1,5 +1,5 @@
-// Private harness for the timeline: a synthetic trace (or ?trace=… when the
-// parser exists), the overview and the timeline, plus a frame-time bench (?bench=1).
+// Timeline harness: a synthetic trace (or ?trace=…), the overview and the
+// timeline, plus a frame-time bench (?bench=1).
 
 import { TraceBuilder } from '../src/core/builder';
 import { F, type Trace } from '../src/core/model';

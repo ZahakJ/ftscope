@@ -532,7 +532,7 @@ export class TraceBuilder {
    * the entry hook before the call's clock starts gives a run of interrupt
    * calls that looks like the call's first children; landing in the exit hook
    * after the clock stopped gives a run that looks like its last children. In
-   * both cases the call's duration is honest and excludes the interrupt, so the
+   * both cases the call's duration is exact and excludes the interrupt, so the
    * run is moved out: before the call, or after it. Returns the end time of a
    * run moved after the call, else NaN.
    */

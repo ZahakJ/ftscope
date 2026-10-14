@@ -78,8 +78,7 @@ Numbers from the committed run:
 - **Decoys, which appear only under tracing:** 9 reads (#3, 96, 160, 251, 532, 634, 732, 828
   and 921) take 48–111 µs because a local-APIC timer interrupt
   (`__sysvec_apic_timer_interrupt`, with its softirq/RCU work) landed inside them. #732 is
-  slower than two of the real misses. None of them contain block I/O. A good viewer must
-  rank by *why* a call was slow, not only by how long it took.
+  slower than two of the real misses. None of them contain block I/O.
 - `07-mystery.latency.csv` is the program's own per-call clock under tracing. It includes
   time outside the syscall, so it has a few extra outliers (for example #348) that do not
   show up as long `__x64_sys_read` blocks.
@@ -94,4 +93,4 @@ are fixed in `src/mystery.c`.
 `read()` of `/dev/zero`. It runs 5 times per configuration, with `tracing_on=1`.
 `overhead.json` has the median, min, max and every run. A KVM guest with the default
 mitigations makes syscalls themselves expensive, so the absolute numbers are higher than
-on bare metal. The ratios are what matter.
+on bare metal.

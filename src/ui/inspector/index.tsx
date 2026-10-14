@@ -97,7 +97,7 @@ function SpanView({ t, a, id }: { t: Trace; a: Analysis; id: number }) {
     const n = detail.spans[pos + d];
     if (n !== undefined) selectSpan(n);
   };
-  // `[` and `]` are global keys owned by the shell; the buttons here do the same.
+  // `[` and `]` are global keys (shell/keys.ts); the buttons here do the same.
   const crumbs = collapseCrumbs(ancestors(t, id));
   const split = timeSplit(dur, a.self[id], a.off[id], a.irq[id]);
   const kids = topChildren(t, id);

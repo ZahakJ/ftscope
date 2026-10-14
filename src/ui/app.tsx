@@ -154,7 +154,7 @@ export function App() {
       <Help />
       {dragging.value && (
         <div class="drop-overlay" aria-hidden="true">
-          <div>Drop to open — nothing is uploaded</div>
+          <div>Drop to open</div>
         </div>
       )}
     </div>

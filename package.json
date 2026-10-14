@@ -1,7 +1,7 @@
 {
   "name": "ftscope",
   "version": "0.1.0",
-  "description": "See what an ftrace says: a browser-only viewer that folds repetition and explains the slow calls.",
+  "description": "Viewer for Linux ftrace output",
   "private": true,
   "type": "module",
   "license": "MIT",

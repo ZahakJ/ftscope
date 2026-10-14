@@ -13,7 +13,7 @@ const PIN = 9; // px reserved at the top for outlier pins
 const BINS = 4096;
 
 export function mountOverview(el: HTMLElement): () => void {
-  // Our own positioned box: the host element's layout belongs to the shell.
+  // A positioned box of its own; the host element's layout is left alone.
   const wrap = document.createElement('div');
   wrap.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden';
   el.append(wrap);

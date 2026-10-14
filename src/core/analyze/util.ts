@@ -3,7 +3,7 @@
 
 import { F, type Trace } from '../model';
 
-/** Duration with three significant digits, as DESIGN.md prescribes. Sentences only; the UI has its own. */
+/** Duration with three significant digits. Sentences only; the UI has its own. */
 export function us(v: number): string {
   if (!isFinite(v)) return '?';
   if (v === 0) return '0 ns';

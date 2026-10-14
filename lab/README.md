@@ -1,21 +1,18 @@
 # ftscope lab
 
-A throwaway virtual machine that boots a real Linux kernel, turns ftrace on in many
-different ways, and hands back the raw output. These files are the test fixtures and demo
-traces for ftscope, and the evidence for the "how ftrace works" write-up.
-
-Nothing touches your machine's own tracing: everything runs as root *inside* a KVM guest,
-which runs inside a Docker container (no `--privileged`, only `--device /dev/kvm`).
+Boots the host's kernel in a KVM guest inside a Docker container (`--device /dev/kvm`,
+not `--privileged`), runs ftrace experiments as root in the guest, and copies the output
+to `examples/traces/`. Host tracing settings are not touched.
 
 ## Run it
 
-You need Docker and a readable/writable `/dev/kvm`.
+Needs Docker and a readable/writable `/dev/kvm`.
 
 ```sh
 ./lab/run.sh
 ```
 
-It takes about 2 minutes, and rewrites `examples/traces/` from your kernel. To only try
+About 2 minutes. Rewrites `examples/traces/` from your kernel. To only try
 `tools/ftscope-record` in the guest (13 seconds, results in `lab/out-record-test/`, nothing
 else touched): `./lab/run.sh record-test`. To trace a different kernel, pass its bzImage:
 `KERNEL=/path/to/bzImage ./lab/run.sh`. The kernel needs ftrace, function_graph,
@@ -26,7 +23,7 @@ virtio-blk, the 8250 serial console, devtmpfs and initramfs support built in (no
 - `lab/out/`: everything, raw (git-ignored). This includes `04-big.trace` (about 40 MB,
   for performance testing), which is not copied to `examples/`.
 - `examples/traces/`: the curated copy, documented in `examples/traces/README.md`.
-- `lab/build/console.log`: the VM's serial console, which is where to look if something fails.
+- `lab/build/console.log`: the VM's serial console.
 
 Every `NN-name.trace` has a matching `NN-name.cmds` listing the exact tracefs writes that
 produced it.

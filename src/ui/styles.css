@@ -761,10 +761,6 @@ kbd {
   font-size: 20px;
   font-weight: 500;
 }
-.private {
-  margin-top: 10px;
-  color: var(--text);
-}
 .demos {
   display: flex;
   flex-wrap: wrap;

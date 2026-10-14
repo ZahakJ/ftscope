@@ -44,7 +44,6 @@ export function Empty() {
         <p class="muted">
           or <span class="link">choose a file</span>, or paste trace text. Plain text or <code>.gz</code>.
         </p>
-        <p class="private">Nothing is uploaded. The file is read by this page, on your machine.</p>
       </div>
       {/* From file:// the browser will not fetch the example files beside the page, so they are not offered. */}
       {location.protocol !== 'file:' && (
@@ -65,11 +64,11 @@ export function Empty() {
           <a class="link mono" href={`${REPO_URL}/blob/main/tools/ftscope-record`} target="_blank" rel="noopener">
             ftscope-record
           </a>
-          <code> -- your-command</code> (it records with these options and restores your settings).
+          <code> -- your-command</code>
         </p>
         <p class="muted">
           <a class="quiet-link" href={BLOG_URL} target="_blank" rel="noopener">
-            New to ftrace? Read how it works →
+            How ftrace works →
           </a>
         </p>
       </section>
@@ -170,15 +169,12 @@ export function Help() {
         </table>
         <h2>Colours and marks</h2>
         <p>
-          In subsystem mode a call&rsquo;s colour names the kernel subsystem of its function (file systems, block I/O, memory,
-          scheduler, and so on), and grey means entry glue or unrecognised. In surprise mode everything is grey except calls
-          that were slow compared with other calls of the same function, warmer the slower. Hollow stretches inside a call are
-          time its task was switched out, and hatched bands are events the kernel lost. A ▲ marks a place where the trace
-          itself is unreliable or a call that is an outlier, and gold outlines are the selection.
+          Subsystem mode: colour is the kernel subsystem; grey is entry glue or unknown. Surprise mode: grey except calls slow
+          against other calls of the same function, warmer the slower. Hollow: task switched out. Hatched: lost events.
+          ▲: unreliable trace or outlier. Gold outline: selection.
         </p>
         <footer class="help-foot">
           <span class="mono">ftscope {version}</span>
-          <span>Runs entirely in your browser — nothing is uploaded</span>
           <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
             GitHub
           </a>
