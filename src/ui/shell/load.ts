@@ -7,6 +7,7 @@ import { analysis, file, load, selection, trace, zoomAll } from '../state';
 // `?worker&inline` embeds the worker as a blob URL, so the single-file build
 // works from file:// where a separate worker script could not be fetched.
 import TraceWorker from '../../core/worker?worker&inline';
+import { traceSource } from './trace-source';
 
 type FromWorker =
   | { type: 'progress'; bytes: number; total: number; note: string }
@@ -82,8 +83,40 @@ function fail(name: string, message: string, samples: { line: number; text: stri
   markReady();
 }
 
+const urlName = (url: string) => {
+  const last = url.split(/[?#]/)[0].split('/').pop() || url;
+  try {
+    return decodeURIComponent(last);
+  } catch {
+    return last;
+  }
+};
+
+/**
+ * Open the trace a `?trace=` link names. A file on this site opens at once; a
+ * file on another site waits until the reader agrees, so a link cannot open a
+ * stranger's file without the reader seeing where it comes from.
+ */
+export function openTraceParam(url: string): void {
+  const name = urlName(url);
+  const src = traceSource(url, location.href);
+  if (src === null) fail(name, 'This link does not name an http or https file.');
+  else if (src === 'same') void loadUrl(url);
+  else {
+    load.value = { phase: 'confirm', name, url, origin: src };
+    markReady();
+  }
+}
+
+/** Decline a `?trace=` link: back to the empty page, and the link's view is forgotten. */
+export function declineTraceParam(): void {
+  readyHooks.length = 0;
+  history.replaceState(null, '', location.pathname);
+  load.value = { phase: 'empty' };
+}
+
 export async function loadUrl(url: string): Promise<void> {
-  const name = decodeURIComponent(url.split(/[?#]/)[0].split('/').pop() || url);
+  const name = urlName(url);
   load.value = { phase: 'loading', name, bytes: 0, total: 0, note: 'Fetching…' };
   try {
     const res = await fetch(new URL(url, location.href));

@@ -8,8 +8,9 @@ import type { Analysis } from '../../core/api';
 import {
   analysis, colorMode, hover, matches, select, selectSpan, selection, spanEnd, trace, view, zoomAll, zoomTo,
 } from '../state';
-import { fmtCount, fmtDur, fmtTime } from '../format';
+import { fmtCount, fmtDur } from '../format';
 import { immediate, setViewNow, shownView } from './shown';
+import { eventTip, line, mono, renderTip, type TipLine } from './tip';
 import { mix, onSchemeChange, readPalette, type Palette } from './colors';
 import {
   HEADER, LANE_GAP, buildIndex, coalesce, easeOut, gapLanes, hitTest, lerpView, layoutLanes, lowerBound, makeItems, ticks, upperBound, visibleRange,
@@ -534,12 +535,10 @@ export function mountTimeline(el: HTMLElement): () => void {
     const t = trace.value!;
     const a = analysis.value;
     const sp = t.spans;
-    let html = '';
-    const mono = (s: string) => `<span style="font:var(--fs-mono) var(--font-mono)">${s}</span>`;
-    const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
+    const lines: TipLine[] = [];
     if (h.kind === 'span' || h.kind === 'run') {
       const id = h.kind === 'span' ? h.id : h.dom;
-      const name = esc(t.funcs.name[sp.func[id]]);
+      const name = t.funcs.name[sp.func[id]];
       const dur = sp.flags[id] & F.NO_DUR
         ? 'no duration (function tracer)'
         : Number.isNaN(sp.dur[id])
@@ -547,18 +546,19 @@ export function mountTimeline(el: HTMLElement): () => void {
           : fmtDur(sp.dur[id]);
       const self = a && !Number.isNaN(a.self[id]) ? ` · self ${fmtDur(a.self[id])}` : '';
       const off = a && a.off[id] > 0 ? ` · off-CPU ${fmtDur(a.off[id])}` : '';
-      html =
-        (h.kind === 'run' ? `<div style="color:var(--text-2)">×${h.hi - h.lo} calls here · largest:</div>` : '') +
-        `<div>${mono(name)}</div><div style="color:var(--text-2)">${mono(dur + self + off)}</div>` +
-        `<div style="color:var(--text-3)">${esc(t.tracks[t.trackOf[id]].name)} · at ${mono(fmtDur(sp.start[id]))}` +
-        `${t.meta.clock === 'reconstructed' ? ' (reconstructed)' : ''}</div>` +
-        (a && a.outlier[id] ? `<div style="color:var(--critical)">▲ slow among its peers</div>` : '');
+      if (h.kind === 'run') lines.push(line('text-2', `×${h.hi - h.lo} calls here · largest:`));
+      lines.push(
+        line(undefined, mono(name)),
+        line('text-2', mono(dur + self + off)),
+        line('text-3', `${t.tracks[t.trackOf[id]].name} · at `, mono(fmtDur(sp.start[id])), t.meta.clock === 'reconstructed' ? ' (reconstructed)' : ''),
+      );
+      if (a && a.outlier[id]) lines.push(line('critical', '▲ slow among its peers'));
     }
-    if (!html) {
+    if (!lines.length) {
       tip.style.display = 'none';
       return;
     }
-    tip.innerHTML = html;
+    renderTip(tip, lines);
     placeTip(x, y);
   }
   /** Below-right of the pointer; flipped to the other side when it would cross an edge. */
@@ -693,22 +693,17 @@ export function mountTimeline(el: HTMLElement): () => void {
     const g = gapAt(p.x, p.y);
     if (g) {
       canvas.style.cursor = 'default';
-      tip.innerHTML = `<div style="color:var(--warn)">${fmtCount(g.lost)} events lost here on CPU ${g.cpu}</div>` +
-        `<div style="color:var(--text-3)">the kernel's buffer overflowed; calls across this point may be cut</div>`;
+      renderTip(tip, [
+        line('warn', `${fmtCount(g.lost)} events lost here on CPU ${g.cpu}`),
+        line('text-3', "the kernel's buffer overflowed; calls across this point may be cut"),
+      ]);
       placeTip(p.x, p.y);
       return;
     }
     const evs = eventsAt(p.x, p.y);
     if (evs.length) {
-      const t = trace.value!;
-      const e0 = evs[0];
-      const span = shown.t1 - shown.t0;
       canvas.style.cursor = evs.length > 1 ? 'zoom-in' : 'pointer';
-      tip.innerHTML = evs.length > 1
-        ? `<div><span style="font:var(--fs-mono) var(--font-mono)">${fmtCount(evs.length)} events</span></div>` +
-          `<div style="color:var(--text-3)">${[...new Set(evs.map((e) => t.eventNames[t.events.name[e]]))].slice(0, 4).join(', ')} · click to zoom in</div>`
-        : `<div><span style="font:var(--fs-mono) var(--font-mono)">${t.eventNames[t.events.name[e0]]}</span></div>` +
-          `<div style="color:var(--text-2)"><span style="font:var(--fs-mono) var(--font-mono)">${fmtTime(t.events.ts[e0], span)}</span> · event</div>`;
+      renderTip(tip, eventTip(trace.value!, evs, shown.t1 - shown.t0));
       placeTip(p.x, p.y);
       return;
     }
