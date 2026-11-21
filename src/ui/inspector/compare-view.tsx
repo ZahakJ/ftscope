@@ -183,7 +183,7 @@ export function Compare({ t, id, peers }: { t: Trace; id: number; peers: Int32Ar
     }
     const sid = h.b.id;
     const d = t.spans.dur[sid];
-    el.innerHTML = '';
+    el.replaceChildren();
     const n = document.createElement('div');
     n.className = 'insp-cmp-tip-name';
     n.textContent = h.b.n > 1 ? `${fmtCount(h.b.n)} calls` : t.funcs.name[t.spans.func[sid]];

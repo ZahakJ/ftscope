@@ -1,10 +1,10 @@
-// The screens shown instead of the workspace: empty, loading, error; and the help sheet.
+// The screens shown instead of the workspace: empty, loading, error, a link's confirmation; and the help sheet.
 
 import { useState } from 'preact/hooks';
 import { fmtBytes } from '../format';
 import { helpOpen, load } from '../state';
 import { version } from '../../../package.json';
-import { loadUrl, notTrace, pickFile } from './load';
+import { declineTraceParam, loadUrl, notTrace, pickFile } from './load';
 import { Mark } from './topbar';
 import { BLOG_URL, REPO_URL } from './links';
 
@@ -122,6 +122,26 @@ export function Failed() {
           </>
         )}
         <button onClick={pickFile}>Try another file</button>
+      </div>
+    </main>
+  );
+}
+
+export function Confirm() {
+  const s = load.value;
+  if (s.phase !== 'confirm') return null;
+  return (
+    <main class="screen failed">
+      <div class="loading-box">
+        <div class="mono name">{s.name}</div>
+        <p>
+          This link opens a trace from another site, <span class="mono">{s.origin}</span>. Open it if you trust where
+          the link came from; the file is read in your browser and goes nowhere.
+        </p>
+        <button onClick={() => loadUrl(s.url)}>Open it</button>{' '}
+        <button class="ghost" onClick={declineTraceParam}>
+          Cancel
+        </button>
       </div>
     </main>
   );

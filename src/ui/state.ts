@@ -18,6 +18,8 @@ export type LoadState =
   | { phase: 'empty' }
   | { phase: 'loading'; name: string; bytes: number; total: number; note: string }
   | { phase: 'error'; name: string; message: string }
+  /** A `?trace=` link to a file on another site, waiting for the reader to agree. */
+  | { phase: 'confirm'; name: string; url: string; origin: string }
   | { phase: 'ready' };
 
 export const load = signal<LoadState>({ phase: 'empty' });

@@ -8,6 +8,7 @@ import { fmtDur } from '../format';
 import { mix, onSchemeChange, readPalette } from './colors';
 import { coverage, pinAt, pinGroups, type PinGroup } from './layout';
 import { setViewNow, shownView } from './shown';
+import { line, mono, renderTip } from './tip';
 
 const PIN = 9; // px reserved at the top for outlier pins
 const BINS = 4096;
@@ -206,16 +207,15 @@ export function mountOverview(el: HTMLElement): () => void {
     const t = trace.value;
     const a = analysis.value;
     if (!t || !a) return;
-    const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
     const o = a.outliers[g.slowest];
     const id = o.span;
     const dur = Number.isNaN(t.spans.dur[id]) ? fmtDur(spanEnd(t, id) - t.spans.start[id]) : fmtDur(t.spans.dur[id]);
-    tip.innerHTML =
-      (g.members.length > 1 ? `<div style="color:var(--text-2)">${g.members.length} slow calls here · slowest:</div>` : '') +
-      `<div><span style="font:var(--fs-mono) var(--font-mono)">${esc(t.funcs.name[t.spans.func[id]])}</span>` +
-      ` <span style="color:var(--text-2);font:var(--fs-mono) var(--font-mono)">${dur}</span></div>` +
-      `<div style="color:var(--critical)">${esc(o.reason)}</div>` +
-      `<div style="color:var(--text-3)">click to select</div>`;
+    renderTip(tip, [
+      ...(g.members.length > 1 ? [line('text-2', `${g.members.length} slow calls here · slowest:`)] : []),
+      line(undefined, mono(t.funcs.name[t.spans.func[id]]), ' ', mono(dur, 'text-2')),
+      line('critical', o.reason),
+      line('text-3', 'click to select'),
+    ]);
     tip.style.display = 'block';
     const r = canvas.getBoundingClientRect();
     const tw = tip.offsetWidth;

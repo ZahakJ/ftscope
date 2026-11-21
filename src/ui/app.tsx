@@ -4,8 +4,8 @@ import { Inspector } from './inspector';
 import { Brief } from './shell/brief';
 import { Functions } from './shell/functions';
 import { installKeys } from './shell/keys';
-import { installInputs, loadUrl, markReady, onNextReady } from './shell/load';
-import { Empty, Failed, Help, Loading } from './shell/screens';
+import { installInputs, markReady, onNextReady, openTraceParam } from './shell/load';
+import { Confirm, Empty, Failed, Help, Loading } from './shell/screens';
 import { TopBar } from './shell/topbar';
 import { restoreHash, syncHash } from './shell/url';
 import { load, leftTab, mode } from './state';
@@ -137,7 +137,7 @@ export function App() {
     const url = new URLSearchParams(location.search).get('trace');
     if (url) {
       onNextReady(restoreHash);
-      void loadUrl(url);
+      openTraceParam(url);
     } else markReady();
     return () => {
       offInputs();
@@ -150,7 +150,7 @@ export function App() {
   return (
     <div class={'app phase-' + phase}>
       <TopBar searchRef={searchRef} />
-      {phase === 'ready' ? <Workspace panels={panels} /> : phase === 'loading' ? <Loading /> : phase === 'error' ? <Failed /> : <Empty />}
+      {phase === 'ready' ? <Workspace panels={panels} /> : phase === 'loading' ? <Loading /> : phase === 'error' ? <Failed /> : phase === 'confirm' ? <Confirm /> : <Empty />}
       <Help />
       {dragging.value && (
         <div class="drop-overlay" aria-hidden="true">
